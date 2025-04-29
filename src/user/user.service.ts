@@ -1,44 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+// src/users/users.service.ts
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
-    @InjectRepository(User) 
-    private usersRepo: Repository<User>,
-  ){}
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   create(createUserDto: CreateUserDto) {
-    const newUser = this.usersRepo.create(createUserDto);
-    return this.usersRepo.save(newUser);
+    const user = this.userRepository.create(createUserDto);
+    return this.userRepository.save(user);
   }
 
   findAll() {
-    const allUsers = this.usersRepo.find();
-    return allUsers; 
+    return this.userRepository.find();
   }
 
   findOne(id: number) {
-    const user = this.usersRepo.findOneBy({ id: id });
-    if (!user) {
-      throw new NotFoundException ;
-    }
-    return user;
+    return this.userRepository.findOneBy({ id });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.usersRepo.findOneBy({ email: email });
-  }
-  
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return this.userRepository.update(id, updateUserDto);
   }
 
   remove(id: number) {
-    return this.usersRepo.delete(id);
+    return this.userRepository.delete(id);
   }
 }

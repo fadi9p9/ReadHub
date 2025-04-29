@@ -1,20 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { create } from 'domain';
+import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { Request } from 'express';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { TokenResponseDto } from './dto/token-response.dto';
+
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  signup(@Body() createUserDto: CreateUserDto) {
+  async signup(@Body() createUserDto: CreateUserDto): Promise<TokenResponseDto> {
     return this.authService.signup(createUserDto);
   }
 
   @Post('login')
-  login(@Body() body: { email: string, password: string }) {
-    return this.authService.login(body.email, body.password);
+  async login(@Body() loginDto: LoginDto): Promise<TokenResponseDto> {
+    return this.authService.login(loginDto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: Request): Promise<{ message: string }> {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const [bearer, token] = authHeader.split(' ');
+    
+    if (bearer !== 'Bearer' || !token) {
+      throw new UnauthorizedException('Invalid authorization format');
+    }
+
+    return this.authService.logout(token);
   }
 }

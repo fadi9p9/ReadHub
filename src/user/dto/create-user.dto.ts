@@ -1,16 +1,27 @@
-import { IsEmail, IsHash, IsString, MinLength } from "class-validator";
+import { IsEmail, IsString, IsOptional, IsEnum } from 'class-validator';
 
 export class CreateUserDto {
-    @IsString()
-    first_name: string;
-    
-    @IsString()
-    last_name: string;
+  @IsString()
+  first_name: string;
 
-    @IsEmail()
-    email: string;
-    
-    @IsString()
-    @MinLength(8)
-    password: string;
+  @IsString()
+  last_name: string;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsEnum(['admin', 'user'])
+  role?: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  img?: string;
 }

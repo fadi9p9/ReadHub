@@ -1,13 +1,12 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard("jwt") {
-  handleRequest(err: any, user: any) {
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest(err, user, info) {
     if (err || !user) {
-      throw err || new UnauthorizedException();
+      throw err || new UnauthorizedException('غير مصرح بالوصول');
     }
     return user;
   }
-
 }
