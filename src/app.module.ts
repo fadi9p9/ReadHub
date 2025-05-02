@@ -32,9 +32,15 @@ import { Favorite } from './favorite/entities/favorite.entity';
 import { QuizWinner } from './quiz-winner/entities/quiz-winner.entity';
 import { BookQuestionModule } from './book-question/book-question.module';
 import { BookQuestionsService } from './book-question/book-question.service';
+import { ConfigModule } from '@nestjs/config';
+import path from 'path';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+        }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',

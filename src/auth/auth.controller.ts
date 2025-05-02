@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, UnauthorizedException, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Request } from 'express';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { TokenResponseDto } from './dto/token-response.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -36,5 +37,25 @@ export class AuthController {
     }
 
     return this.authService.logout(token);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // يتم التعامل معه تلقائياً بواسطة Passport
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: Request) {
+    const googleUser = req.user as {
+      email: string;
+      firstName: string;
+      lastName: string;
+      picture?: string;
+      accessToken: string;
+    };
+    
+    return this.authService.handleGoogleLogin(googleUser);
   }
 }

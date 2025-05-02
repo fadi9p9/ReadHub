@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../user/entities/user.entity';
 import { UsersService } from '../user/user.service';
@@ -21,6 +22,33 @@ export class AuthService {
     private usersRepository: Repository<User>,
   ) {}
 
+  async handleGoogleLogin(googleUser: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    picture?: string;
+    accessToken: string;
+  }): Promise<TokenResponseDto> {
+    let user = await this.usersRepository.findOne({ 
+      where: { email: googleUser.email },
+      select: ['id', 'email', 'first_name', 'last_name', 'role', 'img']
+    });
+
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
+      user = await this.usersService.create({
+        email: googleUser.email,
+        first_name: googleUser.firstName,
+        last_name: googleUser.lastName,
+        password: hashedPassword,
+        role: 'user',
+        img: googleUser.picture
+      });
+    }
+
+    return this.generateTokenResponse(user);
+  }
+
   async signup(createUserDto: CreateUserDto): Promise<TokenResponseDto> {
     const existingUser = await this.usersRepository.findOne({ 
       where: { email: createUserDto.email }
@@ -37,7 +65,6 @@ export class AuthService {
       role: createUserDto.role || 'user'
     });
     
-    // إنشاء توكن للمستخدم الجديد
     return this.generateTokenResponse(newUser);
   }
 
@@ -78,7 +105,7 @@ export class AuthService {
     return {
       access_token: accessToken,
       token_type: 'Bearer',
-      expires_in: 3600, // 1 ساعة بالثواني
+      expires_in: 3600,
       user: {
         id: user.id,
         email: user.email,
