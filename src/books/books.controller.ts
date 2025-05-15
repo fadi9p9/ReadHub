@@ -81,4 +81,7 @@ async update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto, @Upl
   findOne(@Param('id') id: string) {
     return this.booksService.findOne(+id);
   }
-}
+  @Get()
+  async findAll(@Query() paginationDto: PaginationDto): Promise<{ data: Book[], total: number }> {
+    return this.booksService.findAll(paginationDto);
+  }}
