@@ -5,7 +5,7 @@ import { CartItemsService } from './cart_item.service';
 import { CartItemController } from './cart_item.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CartItem])],  // إضافة هذا السطر
+  imports: [TypeOrmModule.forFeature([CartItem])], 
   controllers: [CartItemController],
   providers: [CartItemsService],
 })

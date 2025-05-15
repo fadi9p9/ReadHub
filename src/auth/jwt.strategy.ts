@@ -37,7 +37,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   private extractToken(req: Request): string | undefined {
-    // استخراج التوكن من header
     const authHeader = req.headers['authorization'];
     if (authHeader && typeof authHeader === 'string') {
       const [bearer, token] = authHeader.split(' ');
@@ -46,7 +45,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
     }
 
-    // استخراج التوكن من query parameter
     if ('query' in req && req.query && typeof req.query === 'object') {
       const queryToken = (req.query as { token?: string }).token;
       if (queryToken) {

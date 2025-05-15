@@ -1,4 +1,3 @@
-// src/quiz-results/quiz-results.controller.ts
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { QuizResultsService } from './quiz-result.service';
 import { CreateQuizResultDto } from './dto/create-quiz-result.dto';

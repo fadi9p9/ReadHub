@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-// الكيانات الأساسية (تأكد من وجودها)
 import { User } from './user/entities/user.entity';
 import { Book } from './books/entities/book.entity';
 import { Cart } from './carts/entities/cart.entity';
@@ -12,7 +11,6 @@ import { Category } from './categories/entities/category.entity';
 import { Comment } from './comments/entities/comment.entity';
 import { Like } from './likes/entities/like.entity';
 
-// الوحدات الأساسية (تأكد من وجودها)
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { BooksModule } from './books/books.module';
@@ -34,6 +32,11 @@ import { BookQuestionModule } from './book-question/book-question.module';
 import { BookQuestionsService } from './book-question/book-question.service';
 import { ConfigModule } from '@nestjs/config';
 import path from 'path';
+import { CategoriesModule } from './categories/categories.module';
+import { CouponModule } from './coupon/coupon.module';
+import { QuestionAnswerModule } from './question-answer/question-answer.module';
+import { RepliesModule } from './replaies/replies.module';
+
 
 @Module({
   imports: [
@@ -63,7 +66,6 @@ import path from 'path';
         Favorite,
         QuizWinner,
         
-        // أزل الكيانات غير الموجودة مؤقتاً
       ],
       autoLoadEntities: true,
       synchronize: true,
@@ -81,6 +83,11 @@ import path from 'path';
     QuizWinnerModule,
     FavoriteModule,
     BookQuestionModule,
+    CategoriesModule,
+    CouponModule,
+    QuestionAnswerModule,
+    RepliesModule,
+    UserModule
     
     
   ],

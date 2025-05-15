@@ -3,7 +3,7 @@ import { User } from '../../user/entities/user.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 
 @Entity()
-@Unique(['user', 'comment']) // لمنع الإعجاب المكرر
+@Unique(['user', 'comment'])
 export class Like {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,7 +11,7 @@ export class Like {
   @ManyToOne(() => User, (user) => user.likes)
   user: User;
 
-  @ManyToOne(() => Comment, (comment) => comment.likes)
+  @ManyToOne(() => Comment, (comment) => comment.likes, { onDelete: 'CASCADE' })
   comment: Comment;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

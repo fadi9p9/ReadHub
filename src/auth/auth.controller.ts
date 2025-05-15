@@ -42,7 +42,6 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
-    // يتم التعامل معه تلقائياً بواسطة Passport
   }
 
   @Get('google/callback')

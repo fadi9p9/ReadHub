@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { QuizResult } from '../../quiz-result/entities/quiz-result.entity';
-import { QuizWinner } from 'src/quiz-winner/entities/quiz-winner.entity';
-import { BookQuestion } from 'src/book-question/entities/book-question.entity';
+import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
+import { BookQuestion } from '../../book-question/entities/book-question.entity';
 
 @Entity()
 export class Quiz {
@@ -12,7 +12,9 @@ export class Quiz {
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
-  @ManyToOne(() => Book, (book) => book.quizzes)
+  @ManyToOne(() => Book, (book) => book.quizzes,{
+    onDelete: 'CASCADE'
+  })
   book: Book;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

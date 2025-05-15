@@ -17,7 +17,7 @@ export class RepliesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) { // استخدام ParseIntPipe
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.repliesService.findOne(id);
   }
 

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
-import { QuestionAnswer } from 'src/question-answer/entities/question-answer.entity';
-import { Quiz } from 'src/quiz/entities/quiz.entity';
+import { QuestionAnswer } from '../../question-answer/entities/question-answer.entity';
+import { Quiz } from '../../quiz/entities/quiz.entity';
 
 @Entity('book_questions') 
 export class BookQuestion {
@@ -11,7 +11,9 @@ export class BookQuestion {
   @Column()
   bookId: number;
 
-  @ManyToOne(() => Book, (book) => book.questions)
+  @ManyToOne(() => Book, (book) => book.questions,{
+    onDelete: 'CASCADE'
+  })
   book: Book;
 
   @Column({ type: 'text' })

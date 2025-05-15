@@ -1,4 +1,3 @@
-// في coupon.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
 import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
 
@@ -12,7 +11,9 @@ export class Coupon {
 
   @Column()
   discount_value: number;
+  
 
   @OneToOne(() => QuizWinner, winner => winner.coupon)
   winner: QuizWinner;
+  user: any;
 }

@@ -1,22 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Express } from 'express';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user.id;
-  }
-
-  @Get('all')
+  @Get()
   findAll() {
     return this.userService.findAll();
+  }
+
+    @Post()
+  @UseInterceptors(FileInterceptor('img'))
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), // 10MB بدلاً من 5MB
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    img?: Express.Multer.File,
+  ) {
+    return this.userService.create(createUserDto, img);
   }
 
   @Get(':id')
@@ -25,8 +50,21 @@ export class UserController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @UseInterceptors(FileInterceptor('img'))
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), // 10MB بدلاً من 5MB
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    img?: Express.Multer.File,
+  ) {
+    return this.userService.update(+id, updateUserDto, img);
   }
 
   @Delete(':id')
@@ -34,54 +72,3 @@ export class UserController {
     return this.userService.remove(+id);
   }
 }
-/*
-using System;
-
-class Program
-{
-    static void Main()
-    {
-        int t = int.Parse(Console.ReadLine());  // عدد حالات الاختبار
-
-        for (int test = 0; test < t; test++)
-        {
-            char[,] target = new char[10, 10];
-            int sum = 0;
-
-            // قراءة الحالة
-            for (int r = 0; r < 10; r++)
-            {
-                string line = Console.ReadLine();
-                for (int c = 0; c < 10; c++)
-                {
-                    target[r, c] = line[c];
-                }
-            }
-
-            // حساب النقاط
-            for (int r = 0; r < 10; r++)
-            {
-                for (int c = 0; c < 10; c++)
-                {
-                  if (target[r, c] == 'x')
-                    {
-                        if (r == 0||r == 9|| c == 0|| c == 9)
-                            sum += 1;
-                        else if (r == 1|| r == 8 ||  c == 1 ||  c == 8)
-                            sum += 2;
-                        else if (r == 2 ||  r == 7 ||  c == 2 ||  c == 7)
-                            sum += 3;
-                        else if (r == 3 ||  r == 6 ||  c == 3 ||  c == 6)
-                            sum += 4;
-                        else if (r == 4 ||  r == 5 ||  c == 4 || c == 5)
-                            sum += 5;
-                    }
-                  }
-                }
-             }
-                }
-
-            
-            Console.WriteLine(sum);
-        }
-*/

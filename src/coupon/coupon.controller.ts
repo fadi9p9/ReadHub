@@ -1,4 +1,3 @@
-// src/coupons/coupons.controller.ts
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { CouponsService } from './coupon.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';

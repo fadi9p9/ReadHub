@@ -1,4 +1,3 @@
-// src/question-answers/question-answers.controller.ts
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { QuestionAnswersService } from './question-answer.service';
 import { CreateQuestionAnswerDto } from './dto/create-question-answer.dto';

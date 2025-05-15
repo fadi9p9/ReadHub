@@ -1,5 +1,4 @@
-// src/coupons/coupons.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Coupon } from './entities/coupon.entity';
@@ -22,15 +21,29 @@ export class CouponsService {
     return this.couponRepository.find();
   }
 
-  findOne(id: number) {
-    return this.couponRepository.findOneBy({ id });
+async findOne(id: number) {
+  try {
+    const coupon = await this.couponRepository.findOneOrFail({
+      where: { id },
+      relations: ['winner']
+    });
+    return coupon;
+  } catch (error) {
+    throw new NotFoundException(`Coupon with ID ${id} not found`);
   }
+}
 
   update(id: number, updateCouponDto: UpdateCouponDto) {
-    return this.couponRepository.update(id, updateCouponDto);
+    return this.couponRepository.save({id, ...updateCouponDto});
   }
 
-  remove(id: number) {
-    return this.couponRepository.delete(id);
+  async remove(id: number) {
+  const result = await this.couponRepository.delete(id);
+  
+  if (result.affected === 0) {
+    throw new NotFoundException(`Coupon with ID ${id} not found`);
   }
+  
+  return { message: 'Coupon deleted successfully' };
+}
 }

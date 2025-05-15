@@ -4,7 +4,7 @@ import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { Comment } from './entities/comment.entity';  
 import { Book } from '../books/entities/book.entity';  
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 
 @Module({
   imports: [

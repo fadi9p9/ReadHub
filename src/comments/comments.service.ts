@@ -1,13 +1,11 @@
-// src/comments/comments.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';  
-import { Book } from 'src/books/entities/book.entity'; 
+import { Book } from '../books/entities/book.entity'; 
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { User } from 'src/user/entities/user.entity'; 
-// import { User } from 'src/users/entities/user.entity';
+import { User } from '../user/entities/user.entity'; 
 
 
 @Injectable()
@@ -22,12 +20,13 @@ export class CommentsService {
   ) {}
 
   async create(createCommentDto: CreateCommentDto) {
-    const { text, userId, bookId, parentId } = createCommentDto;
+    const {title, text, userId, bookId, parentId } = createCommentDto;
     
     const comment = this.commentRepository.create({
-      text, // أو content إذا استخدمت هذا الاسم في DTO
+      text,
       user: { id: userId },
       book: { id: bookId },
+      title: title,
       ...(parentId && { parent: { id: parentId } })
     });
   
@@ -35,22 +34,110 @@ export class CommentsService {
   }
   async findAll() {
     return this.commentRepository.find({ 
-      relations: ['user', 'book', 'replies', 'likes'] 
+      relations: ['user', 'book', 'replies', 'likes'],
+      select: {
+        text: true,
+        id: true,
+        user: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          img: true
+          }
+        ,
+        book: {
+          id: true,
+          title: true,
+        },
+        replies: {
+          id: true,
+          text: true,
+          user: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            img: true
+          }
+
+        },
+        likes: {
+          id: true,
+          user: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            img: true
+          }
+        }
+      }
     });
   }
-
   async findOne(id: number) {
     return this.commentRepository.findOne({ 
       where: { id }, 
-      relations: ['user', 'book', 'replies', 'likes']
+      relations: ['user', 'book', 'replies', 'likes'],
+      select: {
+        id: true,
+        text: true,
+        user: {
+          id: true,
+          first_name: true,
+          role: true
+        },
+        book: {
+          id: true
+        },
+        replies: {
+          id: true,
+          text: true,
+          user: {
+            id: true,
+            first_name: true,
+            role: true
+          }
+          
+        },
+        likes: {
+          id: true,
+          user: {
+            id: true,
+            first_name: true,
+            role: true
+          }
+        }
+        
+
+      }
     });
   }
 
   async update(id: number, updateCommentDto: UpdateCommentDto) {
-    return this.commentRepository.update(id, updateCommentDto);  
+  const comment = await this.commentRepository.findOneBy({ id });
+  
+  if (!comment) {
+    throw new NotFoundException(`Comment with ID ${id} not found`);
   }
 
+  this.commentRepository.merge(comment, updateCommentDto);
+  
+  return this.commentRepository.save(comment);
+}
+
   async remove(id: number) {
-    return this.commentRepository.delete(id);
+  const comment = await this.commentRepository.findOne({
+    where: { id },
+    relations: ['replies', 'likes']
+  });
+
+  if (!comment) {
+    throw new NotFoundException(`Comment with ID ${id} not found`);
   }
+
+  await this.commentRepository.remove(comment);
+
+  return { 
+    status: 'success',
+    message: 'Comment and its associated replies/likes deleted successfully'
+  };
+}
 }

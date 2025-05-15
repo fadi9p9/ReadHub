@@ -1,4 +1,3 @@
-// src/question-answers/dto/create-question-answer.dto.ts
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 
 export class CreateQuestionAnswerDto {
@@ -13,4 +12,5 @@ export class CreateQuestionAnswerDto {
 
   @IsBoolean()
   isCorrect: boolean;
+  questionId: any;
 }

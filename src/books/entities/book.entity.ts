@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Comment } from '../../comments/entities/comment.entity';
-import { BookQuestion } from '../../book-question/entities/book-question.entity'; // مسار معدل
-import { CartItem } from 'src/cart_item/entities/cart_item.entity';
-import { Favorite } from 'src/favorite/entities/favorite.entity';
-import { Quiz } from 'src/quiz/entities/quiz.entity';
+import { BookQuestion } from '../../book-question/entities/book-question.entity';
+import { CartItem } from '../../cart_item/entities/cart_item.entity';
+import { Favorite } from '../../favorite/entities/favorite.entity';
+import { Quiz } from '../../quiz/entities/quiz.entity';
 
 @Entity()
 export class Book {
@@ -32,6 +32,18 @@ export class Book {
   @Column({ type: 'varchar', length: 255, nullable: true })
   pdf: string;
 
+  @Column({ type: 'decimal', default: 1, nullable: true })
+  rating: number;
+
+  @Column('int')
+  rating_count: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_pages: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_ratings: number;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
@@ -46,11 +58,12 @@ export class Book {
   comments: Comment[];
   
   @OneToMany(() => BookQuestion, (question) => question.book, {
-    onDelete: 'CASCADE', // تحسين إضافي
-  })
+    onDelete: 'CASCADE',})
   questions: BookQuestion[];
 
-  @OneToMany(() => Favorite, favorite => favorite.book)
+  @OneToMany(() => Favorite, favorite => favorite.book,{
+    onDelete: 'CASCADE'
+  })
 favorites: Favorite[];
 
 @OneToMany(() => Quiz, quiz => quiz.book)

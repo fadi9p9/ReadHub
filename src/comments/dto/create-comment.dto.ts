@@ -7,6 +7,9 @@ export class CreateCommentDto {
   @IsInt()
   userId: number; 
 
+  @IsString()
+  title: string;
+
   @IsInt()
   bookId: number; 
 

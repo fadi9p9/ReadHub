@@ -1,4 +1,3 @@
-// في quiz-winner.entity.ts
 import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn, Column } from 'typeorm';
 import { Quiz } from '../../quiz/entities/quiz.entity';
 import { User } from '../../user/entities/user.entity';
@@ -9,7 +8,9 @@ export class QuizWinner {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Quiz)
+  @ManyToOne(() => Quiz,{
+    onDelete: 'CASCADE'
+  })
   quiz: Quiz;
 
   @ManyToOne(() => User)

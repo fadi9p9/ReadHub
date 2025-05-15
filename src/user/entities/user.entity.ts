@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Cart } from '../../carts/entities/cart.entity';
 import { Comment } from '../../comments/entities/comment.entity';
-import { Favorite } from 'src/favorite/entities/favorite.entity';
-import { QuestionAnswer } from 'src/question-answer/entities/question-answer.entity';
-import { QuizWinner } from 'src/quiz-winner/entities/quiz-winner.entity';
-import { QuizResult } from 'src/quiz-result/entities/quiz-result.entity';
+import { Favorite } from '../../favorite/entities/favorite.entity';
+import { QuestionAnswer } from '../../question-answer/entities/question-answer.entity';
+import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
+import { QuizResult } from '../../quiz-result/entities/quiz-result.entity';
 import { Reply } from '../../replaies/entities/replay.entity';
 @Entity()
 export class User {
@@ -32,10 +32,10 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   img: string;
 
-  @Column({ nullable: true, type: 'varchar' }) // السماح بقيمة null صراحةً
+  @Column({ nullable: true, type: 'varchar' }) 
   token: string | null;
 
-  @Column({ type: 'timestamp', nullable: true }) // السماح بقيمة null
+  @Column({ type: 'timestamp', nullable: true }) 
   last_login_at?: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

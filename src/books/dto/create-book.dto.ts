@@ -8,12 +8,24 @@ export class CreateBookDto {
   @IsString()
   description?: string;
 
-  @IsOptional()
-  @IsString()
-  img?: string;
-
   @IsString()
   author: string;
+
+  @IsOptional()
+  @IsNumber()
+  rating?: number;
+
+  @IsOptional()
+  @IsNumber()
+  ratingCount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalPages?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalRatings?: number;
 
   @IsNumber()
   price: number;
@@ -22,11 +34,9 @@ export class CreateBookDto {
   @IsNumber()
   discount?: number;
 
-  @IsOptional()
-  @IsString()
-  pdf?: string;
-
   @IsArray()
   @IsNumber({}, { each: true })
   categoryIds: number[];
+  img: string;
+  pdf: string;
 }

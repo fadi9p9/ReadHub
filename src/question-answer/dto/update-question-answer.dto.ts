@@ -3,4 +3,5 @@ import { CreateQuestionAnswerDto } from './create-question-answer.dto';
 
 export class UpdateQuestionAnswerDto extends PartialType(CreateQuestionAnswerDto) {
   is_correct: undefined;
+  questionId: any;
 }

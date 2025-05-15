@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'ty
 import { User } from '../../user/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
 import { Like } from '../../likes/entities/like.entity';
-import { Reply } from 'src/replaies/entities/replay.entity';
+import { Reply } from '../../replaies/entities/replay.entity';
 
 @Entity()
 export class Comment {
@@ -12,7 +12,9 @@ export class Comment {
   @ManyToOne(() => User, (user) => user.comments)
   user: User;
 
-  @ManyToOne(() => Book, (book) => book.comments)
+  @ManyToOne(() => Book, (book) => book.comments,{
+    onDelete: 'CASCADE'
+  })
   book: Book;
 
   @Column({ type: 'varchar', length: 100 })
@@ -24,9 +26,14 @@ export class Comment {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @OneToMany(() => Reply, (reply) => reply.comment)
+   @OneToMany(() => Reply, (reply) => reply.comment, {
+    onDelete: 'CASCADE' 
+  })
   replies: Reply[];
 
-  @OneToMany(() => Like, (like) => like.comment)
+
+  @OneToMany(() => Like, (like) => like.comment, {
+    onDelete: 'CASCADE'
+  })
   likes: Like[];
 }

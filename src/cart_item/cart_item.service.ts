@@ -1,5 +1,4 @@
-// src/cart-items/cart-items.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartItem } from './entities/cart_item.entity';
@@ -27,10 +26,17 @@ export class CartItemsService {
   }
 
   update(id: number, updateCartItemDto: UpdateCartItemDto) {
-    return this.cartItemRepository.update(id, updateCartItemDto);
+    return this.cartItemRepository.save({id,
+      ...updateCartItemDto});
   }
 
-  remove(id: number) {
-    return this.cartItemRepository.delete(id);
-  }
+ async remove(id: number) {
+    const result= this.cartItemRepository.delete(id);
+     if ((await result).affected === 0) {
+        throw new NotFoundException(`cart_item with ID ${id} not found`);
+      }
+      
+      return { message: 'cart_item deleted successfully' };
+    }
+  
 }

@@ -10,8 +10,8 @@ export class Reply {
   @ManyToOne(() => User, (user) => user.replies)
   user: User;
 
-  @ManyToOne(() => Comment, (comment) => comment.replies)
-  comment: Comment;
+@ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
+comment: Comment;
 
   @Column({ type: 'text' })
   text: string;
