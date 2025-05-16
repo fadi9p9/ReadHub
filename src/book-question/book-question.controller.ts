@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { BookQuestionsService } from './book-question.service';
 import { CreateBookQuestionDto } from './dto/create-book-question.dto';
 import { UpdateBookQuestionDto } from './dto/update-book-question.dto';
 
 @Controller('book-questions')
 export class BookQuestionsController {
-  constructor(private readonly bookQuestionsService: BookQuestionsService) {}
+  constructor(private readonly questionsService: BookQuestionsService) {}
 
   @Post()
-  create(@Body() createBookQuestionDto: CreateBookQuestionDto) {
-    return this.bookQuestionsService.create(createBookQuestionDto);
+  create(@Body() createDto: CreateBookQuestionDto) {
+    return this.questionsService.create(createDto);
   }
 
-  @Get()
-  findAll() {
-    return this.bookQuestionsService.findAll();
+  @Get('paginated')
+  async findAllPaginated(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+    @Query('lang') lang?: string
+  ) {
+    return this.questionsService.findAllWithPagination(page, limit, lang);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookQuestionsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.questionsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBookQuestionDto: UpdateBookQuestionDto) {
-    return this.bookQuestionsService.update(+id, updateBookQuestionDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdateBookQuestionDto
+  ) {
+    return this.questionsService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bookQuestionsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.questionsService.remove(id);
   }
 }

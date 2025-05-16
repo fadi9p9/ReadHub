@@ -1,0 +1,12 @@
+[
+  {
+    "lang": "en",
+    "title": "English Title",
+    "description": "English Description"
+  },
+  {
+    "lang": "ar",
+    "title": "عنوان عربي",
+    "description": "وصف عربي"
+  }
+]

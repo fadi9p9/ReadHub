@@ -1,8 +1,29 @@
-import { IsInt, IsString, IsEnum } from 'class-validator';
+import { IsInt, IsString, IsEnum, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class QuestionTranslationDto {
+  @IsString()
+  lang: string;
+
+  @IsString()
+  question_text: string;
+
+  @IsString()
+  option_a: string;
+
+  @IsString()
+  option_b: string;
+
+  @IsString()
+  option_c: string;
+
+  @IsString()
+  option_d: string;
+}
 
 export class CreateBookQuestionDto {
   @IsInt()
-  bookId: number; 
+  bookId: number;
 
   @IsString()
   question_text: string;
@@ -21,4 +42,12 @@ export class CreateBookQuestionDto {
 
   @IsEnum(['a', 'b', 'c', 'd'])
   correct_option: string;
+
+  @IsInt()
+  quizId: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuestionTranslationDto)
+  translations?: QuestionTranslationDto[];
 }

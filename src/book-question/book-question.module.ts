@@ -5,9 +5,10 @@ import { BookQuestion } from './entities/book-question.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BooksModule } from '../books/books.module';
 import { QuizModule } from '../quiz/quiz.module';
+import { BookQuestionTranslation } from './entities/book-question-translation.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BookQuestion]),
+  imports: [TypeOrmModule.forFeature([BookQuestion, BookQuestionTranslation]),
     BooksModule,QuizModule], 
   controllers: [BookQuestionsController],
   providers: [BookQuestionsService],

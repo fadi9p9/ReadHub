@@ -1,14 +1,12 @@
-import { IsOptional, IsNumber, Min, IsString, IsArray } from 'class-validator';
+import { IsOptional, IsNumber, IsString, IsArray } from 'class-validator';
 
 export class PaginationDto {
   @IsOptional()
   @IsNumber()
-  @Min(1)
   page?: number = 1;
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
   limit?: number = 10;
 
   @IsOptional()
@@ -24,7 +22,21 @@ export class PaginationDto {
   maxPrice?: number;
 
   @IsOptional()
+  @IsNumber()
+  minRating?: number;
+
+  @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
   categoryIds?: number[];
+
+  @IsOptional()
+  @IsString()
+  lang?: string;
+
+  @IsOptional()
+  newest?: boolean;
+
+  @IsOptional()
+  highestRated?: boolean;
 }

@@ -11,15 +11,28 @@ export class Book {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // الحقول الأساسية (الإنجليزية)
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description: string | null;
+
+  // حقول الترجمة العربية
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  ar_title: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  ar_description: string | null;
+
+  // الملفات
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  img: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  img: string;
+  pdf: string | null;
 
+  // المعلومات الأساسية
   @Column({ type: 'varchar', length: 100 })
   author: string;
 
@@ -29,13 +42,11 @@ export class Book {
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   discount: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  pdf: string;
-
-  @Column({ type: 'decimal', default: 1, nullable: true })
+  // الإحصائيات
+  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0 })
   rating: number;
 
-  @Column('int')
+  @Column({ type: 'int', default: 0 })
   rating_count: number;
 
   @Column({ type: 'int', default: 0 })
@@ -47,6 +58,7 @@ export class Book {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
+  // العلاقات
   @ManyToMany(() => Category)
   @JoinTable({ name: 'book_categories' })
   categories: Category[];
@@ -58,16 +70,15 @@ export class Book {
   comments: Comment[];
   
   @OneToMany(() => BookQuestion, (question) => question.book, {
-    onDelete: 'CASCADE',})
+    onDelete: 'CASCADE',
+  })
   questions: BookQuestion[];
 
-  @OneToMany(() => Favorite, favorite => favorite.book,{
-    onDelete: 'CASCADE'
+  @OneToMany(() => Favorite, (favorite) => favorite.book, {
+    onDelete: 'CASCADE',
   })
-favorites: Favorite[];
+  favorites: Favorite[];
 
-@OneToMany(() => Quiz, quiz => quiz.book)
-quizzes: Quiz[];
-
-
+  @OneToMany(() => Quiz, (quiz) => quiz.book)
+  quizzes: Quiz[];
 }

@@ -8,35 +8,41 @@ export class CreateBookDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  ar_title?: string;
+
+  @IsOptional()
+  @IsString()
+  ar_description?: string;
+
   @IsString()
   author: string;
-
-  @IsOptional()
-  @IsNumber()
-  rating?: number;
-
-  @IsOptional()
-  @IsNumber()
-  ratingCount?: number;
-
-  @IsOptional()
-  @IsNumber()
-  totalPages?: number;
-
-  @IsOptional()
-  @IsNumber()
-  totalRatings?: number;
 
   @IsNumber()
   price: number;
 
   @IsOptional()
   @IsNumber()
-  discount?: number;
+  discount?: number = 0;
+
+  @IsOptional()
+  @IsNumber()
+  total_pages?: number = 0;
+
+  @IsOptional()
+  @IsNumber()
+  rating_count?: number = 0;
+
+  @IsOptional()
+  @IsNumber()
+  total_ratings?: number = 0;
+
+  @IsOptional()
+  @IsNumber()
+  rating?: number = 0;
 
   @IsArray()
   @IsNumber({}, { each: true })
   categoryIds: number[];
-  img: string;
-  pdf: string;
 }

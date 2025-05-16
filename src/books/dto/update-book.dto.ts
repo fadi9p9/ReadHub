@@ -7,6 +7,7 @@ export class UpdateBookDto extends PartialType(CreateBookDto) {
   @IsArray()
   @IsNumber({}, { each: true })
   categoryIds?: number[];
-  img: string;
-  pdf: string;
+
+  img?: Express.Multer.File;
+  pdf?: Express.Multer.File;
 }
