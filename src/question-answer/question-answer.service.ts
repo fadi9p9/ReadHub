@@ -10,8 +10,6 @@ import { BookQuestion } from 'src/book-question/entities/book-question.entity';
 @Injectable()
 export class QuestionAnswersService {
   repository: any;
-  // questionRepository: any;
-  // userRepository: any;
   constructor(
     @InjectRepository(QuestionAnswer)
     private readonly questionAnswerRepository: Repository<QuestionAnswer>,
@@ -26,7 +24,6 @@ export class QuestionAnswersService {
     isCorrect: Boolean(dto.isCorrect),
   });
 
-  // تحميل السؤال
   if (dto.questionId) {
     const question = await this.questionRepository.findOneBy({ id: dto.questionId });
     if (!question) throw new NotFoundException('Question not found');
@@ -97,19 +94,16 @@ async update(id: number, dto: UpdateQuestionAnswerDto) {
   const answer = await this.questionAnswerRepository.findOne({ where: { id }, relations: ['question', 'user'] });
   if (!answer) throw new NotFoundException('Answer not found');
 
-  // تعديل isCorrect
   if (dto.isCorrect !== undefined) {
     answer.isCorrect = Boolean(dto.isCorrect);
   }
 
-  // تحديث السؤال
   if (dto.questionId) {
     const question = await this.questionRepository.findOneBy({ id: dto.questionId });
     if (!question) throw new NotFoundException('Question not found');
     answer.question = question;
   }
 
-  // تحديث المستخدم
   if (dto.userId) {
     const user = await this.userRepository.findOneBy({ id: dto.userId });
     if (!user) throw new NotFoundException('User not found');

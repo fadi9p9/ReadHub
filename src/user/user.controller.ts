@@ -34,7 +34,7 @@ export class UserController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), // 10MB بدلاً من 5MB
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), 
         ],
         fileIsRequired: false,
       }),
@@ -57,7 +57,7 @@ export class UserController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), // 10MB بدلاً من 5MB
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }), 
         ],
         fileIsRequired: false,
       }),

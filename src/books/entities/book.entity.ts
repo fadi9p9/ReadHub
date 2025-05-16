@@ -11,28 +11,24 @@ export class Book {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // الحقول الأساسية (الإنجليزية)
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  // حقول الترجمة العربية
   @Column({ type: 'varchar', length: 100, nullable: true })
   ar_title: string | null;
 
   @Column({ type: 'text', nullable: true })
   ar_description: string | null;
 
-  // الملفات
   @Column({ type: 'varchar', length: 255, nullable: true })
   img: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   pdf: string | null;
 
-  // المعلومات الأساسية
   @Column({ type: 'varchar', length: 100 })
   author: string;
 
@@ -42,7 +38,6 @@ export class Book {
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   discount: number;
 
-  // الإحصائيات
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 0 })
   rating: number;
 
@@ -58,7 +53,6 @@ export class Book {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  // العلاقات
   @ManyToMany(() => Category)
   @JoinTable({ name: 'book_categories' })
   categories: Category[];

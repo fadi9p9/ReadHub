@@ -21,7 +21,6 @@ export class BooksService {
    private parseCategoryIds(categoryIds: any): number[] {
     if (!categoryIds) return [];
     
-    // التحويل الآمن لجميع الأنواع
     const idsArray = Array.isArray(categoryIds)
       ? categoryIds
       : String(categoryIds).split(',');
@@ -38,30 +37,24 @@ export class BooksService {
   ) {
     const book = new Book();
     
-    // English fields
     book.title = createBookDto.title;
     book.description = createBookDto.description || null;
 
-    // Arabic fields
     book.ar_title = createBookDto.ar_title || null;
     book.ar_description = createBookDto.ar_description || null;
 
-    // Basic info
     book.author = createBookDto.author;
     book.price = createBookDto.price;
     book.discount = createBookDto.discount || 0;
 
-    // Stats
     book.total_pages = createBookDto.total_pages || 0;
     book.rating_count = createBookDto.rating_count || 0;
     book.total_ratings = createBookDto.total_ratings || 0;
     book.rating = createBookDto.rating || 0;
 
-    // Files
     if (image) book.img = `/uploads/${image.filename}`;
     if (file) book.pdf = `/uploads/${file.filename}`;
 
-    // Categories
     if (createBookDto.categoryIds) {
       book.categories = await this.categoryRepository.findByIds(
         createBookDto.categoryIds,
@@ -90,7 +83,6 @@ async findAll(paginationDto: PaginationDto) {
     const query = this.bookRepository.createQueryBuilder('book')
         .leftJoinAndSelect('book.categories', 'category');
 
-    // تطبيق البحث
     if (search) {
         if (lang === 'ar') {
             query.where(
@@ -105,7 +97,6 @@ async findAll(paginationDto: PaginationDto) {
         }
     }
 
-    // فلترة السعر
     if (minPrice !== undefined || maxPrice !== undefined) {
         query.andWhere('book.price BETWEEN :minPrice AND :maxPrice', {
             minPrice: minPrice || 0,
@@ -113,7 +104,6 @@ async findAll(paginationDto: PaginationDto) {
         });
     }
 
-    // فلترة التقييم
     if (minRating !== undefined) {
         query.andWhere('book.rating >= :minRating', { minRating });
     }
@@ -124,19 +114,16 @@ async findAll(paginationDto: PaginationDto) {
       query.andWhere('category.id IN (:...categories)', { categories });
     }
 
-    // الترتيب
     if (newest) {
         query.orderBy('book.created_at', 'DESC');
     } else if (highestRated) {
         query.orderBy('book.rating', 'DESC');
     }
 
-    // التنقيح
     query.take(limit).skip(skip);
 
     const [books, total] = await query.getManyAndCount();
 
-    // معالجة اللغة
     const processedBooks = books.map((book) => {
         if (lang === 'ar') {
             return {
@@ -196,24 +183,20 @@ async findAll(paginationDto: PaginationDto) {
       throw new NotFoundException(`Book with ID ${id} not found`);
     }
 
-    // Update English fields
     if (updateBookDto.title) book.title = updateBookDto.title;
     if (updateBookDto.description !== undefined)
       book.description = updateBookDto.description;
 
-    // Update Arabic fields
     if (updateBookDto.ar_title !== undefined)
       book.ar_title = updateBookDto.ar_title;
     if (updateBookDto.ar_description !== undefined)
       book.ar_description = updateBookDto.ar_description;
 
-    // Update basic info
     if (updateBookDto.author) book.author = updateBookDto.author;
     if (updateBookDto.price) book.price = updateBookDto.price;
     if (updateBookDto.discount !== undefined)
       book.discount = updateBookDto.discount;
 
-    // Update stats
     if (updateBookDto.total_pages !== undefined)
       book.total_pages = updateBookDto.total_pages;
     if (updateBookDto.rating_count !== undefined)
@@ -222,7 +205,6 @@ async findAll(paginationDto: PaginationDto) {
       book.total_ratings = updateBookDto.total_ratings;
     if (updateBookDto.rating !== undefined) book.rating = updateBookDto.rating;
 
-    // Update files
     if (image) {
       if (book.img) {
         const imagePath = path.join(
@@ -247,7 +229,6 @@ async findAll(paginationDto: PaginationDto) {
       book.pdf = `/uploads/${file.filename}`;
     }
 
-    // Update categories
     if (updateBookDto.categoryIds) {
       book.categories = await this.categoryRepository.findByIds(
         updateBookDto.categoryIds,
@@ -263,7 +244,6 @@ async findAll(paginationDto: PaginationDto) {
       throw new NotFoundException(`Book with ID ${id} not found`);
     }
 
-    // Delete associated files
     if (book.img) {
       const imagePath = path.join(
         process.cwd(),

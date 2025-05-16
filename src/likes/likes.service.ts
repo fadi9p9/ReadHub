@@ -8,8 +8,6 @@ import { User } from '../user/entities/user.entity';
 import { Comment } from '../comments/entities/comment.entity';
 @Injectable()
 export class LikesService {
-  // usersRepository: any;
-  // commentsRepository: any;
   constructor(
     @InjectRepository(Like)
      private readonly likeRepository: Repository<Like>,

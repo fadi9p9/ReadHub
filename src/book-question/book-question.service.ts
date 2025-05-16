@@ -51,7 +51,6 @@ export class BookQuestionsService {
     .skip(skip);
 
   if (lang) {
-    // البحث في الترجمات أو النص الأصلي إذا لم توجد ترجمة
     query.where(
       '(translation.lang = :lang AND translation.question_text IS NOT NULL) OR (translation.id IS NULL AND :lang = \'en\')', 
       { lang }
@@ -60,7 +59,6 @@ export class BookQuestionsService {
 
   const [questions, total] = await query.getManyAndCount();
 
-  // معالجة البيانات
   const processedQuestions = questions.map(question => {
     if (lang) {
       const translation = question.translations?.find(t => t.lang === lang);

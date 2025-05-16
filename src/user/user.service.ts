@@ -43,7 +43,6 @@ export class UsersService {
     img?: Express.Multer.File,
   ): Promise<User> {
     try {
-      // إنشاء مجلد التحميل إذا لم يكن موجوداً
       const uploadDir = path.join(process.cwd(), 'uploads', 'users');
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
@@ -124,7 +123,6 @@ export class UsersService {
   async remove(id: number): Promise<void> {
     const user = await this.findOne(id);
 
-    // Delete user image if exists
     if (user.img) {
       const imagePath = path.join(
         process.cwd(),
