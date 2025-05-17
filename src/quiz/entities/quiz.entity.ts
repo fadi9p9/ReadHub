@@ -12,20 +12,21 @@ export class Quiz {
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
-  @ManyToOne(() => Book, (book) => book.quizzes,{
-    onDelete: 'CASCADE'
-  })
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  ar_title: string;
+
+  @ManyToOne(() => Book, (book) => book.quizzes, { onDelete: 'CASCADE' })
   book: Book;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @OneToMany(() => BookQuestion , (question) => question.quiz)
-  questions: BookQuestion [];
+  @OneToMany(() => BookQuestion, (question) => question.quiz)
+  questions: BookQuestion[];
 
   @OneToMany(() => QuizResult, (result) => result.quiz)
   results: QuizResult[];
   
-  @OneToMany(() => QuizWinner, winner => winner.quiz)
-winners: QuizWinner[];
+  @OneToMany(() => QuizWinner, (winner) => winner.quiz)
+  winners: QuizWinner[];
 }

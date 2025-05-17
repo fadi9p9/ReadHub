@@ -9,6 +9,9 @@ export class Category {
   @Column({ type: 'varchar', length: 50 })
   title: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  ar_title: string;
+
   @ManyToMany(() => Book, (book) => book.categories)
   books: Book[];
 }

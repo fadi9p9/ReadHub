@@ -47,8 +47,8 @@ export class Book {
   @Column({ type: 'int', default: 0 })
   total_pages: number;
 
-  @Column({ type: 'int', default: 0 })
-  total_ratings: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+discounted_price: number | null;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

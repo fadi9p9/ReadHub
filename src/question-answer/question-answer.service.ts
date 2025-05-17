@@ -110,6 +110,10 @@ async update(id: number, dto: UpdateQuestionAnswerDto) {
     answer.user = user;
   }
 
+    if(dto.selected_option){
+      answer.selected_option = dto.selected_option;
+    }
+
   return this.questionAnswerRepository.save(answer);
 }
 

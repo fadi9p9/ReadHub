@@ -6,6 +6,7 @@ import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { Book } from '../books/entities/book.entity';
 import { User } from '../user/entities/user.entity';
+import { PaginationFavoriteDto } from './dto/pagination-favorite.dto';
 
 @Injectable()
 export class FavoriteService {
@@ -22,27 +23,43 @@ export class FavoriteService {
     }
     return this.favoriteRepository.save({ user: { id: userId }, book: { id: bookId } });
 }
-  async findAll(): Promise<Favorite[]> {
-    return await this.favoriteRepository.find({
-      relations: ['user', 'book'],
-      select:{
-        id: true,
-        created_at: true,
-        user: {
-          id: true,
-        },
-        book: {
-          id: true,
-          title: true,
-          author: true,
-          img: true,
-          price: true,
-          discount: true,
-          total_ratings: true,
-          total_pages:true
-        },
-      }
-  });
+  async findAll(paginationDto: PaginationFavoriteDto): Promise<{data: Favorite[], count: number}> {
+    const { limit = 10, page = 1, userId, bookId } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const query = this.favoriteRepository
+      .createQueryBuilder('favorite')
+      .leftJoinAndSelect('favorite.user', 'user')
+      .leftJoinAndSelect('favorite.book', 'book')
+      .select([
+        'favorite.id',
+        'favorite.created_at',
+        'user.id',
+        'book.id',
+        'book.title',
+        'book.author',
+        'book.img',
+        'book.price',
+        'book.discount',
+        'book.total_pages'
+      ])
+      .take(limit)
+      .skip(skip);
+
+    if (userId) {
+      query.andWhere('user.id = :userId', { userId });
+    }
+
+    if (bookId) {
+      query.andWhere('book.id = :bookId', { bookId });
+    }
+
+    const [data, count] = await query.getManyAndCount();
+
+    return {
+      data,
+      count
+    };
   }
 
   async findOne(id: number): Promise<Favorite> {
@@ -62,7 +79,6 @@ export class FavoriteService {
           img: true,
           price: true,
           discount: true,
-          total_ratings: true,
           total_pages:true
         },
       }

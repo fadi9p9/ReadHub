@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query, Req } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { PaginationCommentDto } from './dto/pagination-comment.dto';
+import { Request } from 'express';
 
 @Controller('comments')
 export class CommentsController {
@@ -13,8 +15,12 @@ export class CommentsController {
   }
 
   @Get()
-  findAll() {
-    return this.commentsService.findAll();
+  async findAll(
+    @Query() paginationDto: PaginationCommentDto,
+    @Req() request: Request,
+  ) {
+    const baseUrl = `${request.protocol}://${request.get('host')}${request.path}`;
+    return this.commentsService.findAll(paginationDto, baseUrl);
   }
 
   @Get(':id')

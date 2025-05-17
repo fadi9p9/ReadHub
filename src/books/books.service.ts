@@ -31,38 +31,39 @@ export class BooksService {
   }
 
   async create(
-    createBookDto: CreateBookDto,
-    image?: Express.Multer.File,
-    file?: Express.Multer.File,
-  ) {
-    const book = new Book();
-    
-    book.title = createBookDto.title;
-    book.description = createBookDto.description || null;
+  createBookDto: CreateBookDto,
+  image?: Express.Multer.File,
+  file?: Express.Multer.File,
+) {
+  const book = new Book();
+  
+  book.title = createBookDto.title;
+  book.description = createBookDto.description || null;
 
-    book.ar_title = createBookDto.ar_title || null;
-    book.ar_description = createBookDto.ar_description || null;
+  book.ar_title = createBookDto.ar_title || null;
+  book.ar_description = createBookDto.ar_description || null;
 
-    book.author = createBookDto.author;
-    book.price = createBookDto.price;
-    book.discount = createBookDto.discount || 0;
+  book.author = createBookDto.author;
+  book.price = createBookDto.price;
+  book.discount = createBookDto.discount || 0;
 
-    book.total_pages = createBookDto.total_pages || 0;
-    book.rating_count = createBookDto.rating_count || 0;
-    book.total_ratings = createBookDto.total_ratings || 0;
-    book.rating = createBookDto.rating || 0;
+  book.total_pages = createBookDto.total_pages || 0;
+  book.rating_count = createBookDto.rating_count || 0;
+  book.rating = createBookDto.rating || 0;
 
-    if (image) book.img = `/uploads/${image.filename}`;
-    if (file) book.pdf = `/uploads/${file.filename}`;
+  if (image) book.img = `/uploads/${image.filename}`;
+  if (file) book.pdf = `/uploads/${file.filename}`;
 
-    if (createBookDto.categoryIds) {
-      book.categories = await this.categoryRepository.findByIds(
-        createBookDto.categoryIds,
-      );
-    }
-
-    return await this.bookRepository.save(book);
+  if (createBookDto.categoryIds) {
+    book.categories = await this.categoryRepository.findByIds(
+      createBookDto.categoryIds,
+    );
   }
+
+  await this.calculateAndUpdateDiscountedPrice(book);
+  
+  return await this.bookRepository.save(book);
+}
 
  
 async findAll(paginationDto: PaginationDto) {
@@ -168,75 +169,78 @@ async findAll(paginationDto: PaginationDto) {
     return book;
   }
 
-  async update(
-    id: number,
-    updateBookDto: UpdateBookDto,
-    image?: Express.Multer.File,
-    file?: Express.Multer.File,
-  ) {
-    const book = await this.bookRepository.findOne({
-      where: { id },
-      relations: ['categories'],
-    });
+ async update(
+  id: number,
+  updateBookDto: UpdateBookDto,
+  image?: Express.Multer.File,
+  file?: Express.Multer.File,
+) {
+  const book = await this.bookRepository.findOne({
+    where: { id },
+    relations: ['categories'],
+  });
 
-    if (!book) {
-      throw new NotFoundException(`Book with ID ${id} not found`);
-    }
-
-    if (updateBookDto.title) book.title = updateBookDto.title;
-    if (updateBookDto.description !== undefined)
-      book.description = updateBookDto.description;
-
-    if (updateBookDto.ar_title !== undefined)
-      book.ar_title = updateBookDto.ar_title;
-    if (updateBookDto.ar_description !== undefined)
-      book.ar_description = updateBookDto.ar_description;
-
-    if (updateBookDto.author) book.author = updateBookDto.author;
-    if (updateBookDto.price) book.price = updateBookDto.price;
-    if (updateBookDto.discount !== undefined)
-      book.discount = updateBookDto.discount;
-
-    if (updateBookDto.total_pages !== undefined)
-      book.total_pages = updateBookDto.total_pages;
-    if (updateBookDto.rating_count !== undefined)
-      book.rating_count = updateBookDto.rating_count;
-    if (updateBookDto.total_ratings !== undefined)
-      book.total_ratings = updateBookDto.total_ratings;
-    if (updateBookDto.rating !== undefined) book.rating = updateBookDto.rating;
-
-    if (image) {
-      if (book.img) {
-        const imagePath = path.join(
-          process.cwd(),
-          'uploads',
-          path.basename(book.img),
-        );
-        if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-      }
-      book.img = `/uploads/${image.filename}`;
-    }
-
-    if (file) {
-      if (book.pdf) {
-        const pdfPath = path.join(
-          process.cwd(),
-          'uploads',
-          path.basename(book.pdf),
-        );
-        if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
-      }
-      book.pdf = `/uploads/${file.filename}`;
-    }
-
-    if (updateBookDto.categoryIds) {
-      book.categories = await this.categoryRepository.findByIds(
-        updateBookDto.categoryIds,
-      );
-    }
-
-    return await this.bookRepository.save(book);
+  if (!book) {
+    throw new NotFoundException(`Book with ID ${id} not found`);
   }
+
+  if (updateBookDto.title) book.title = updateBookDto.title;
+  if (updateBookDto.description !== undefined)
+    book.description = updateBookDto.description;
+
+  if (updateBookDto.ar_title !== undefined)
+    book.ar_title = updateBookDto.ar_title;
+  if (updateBookDto.ar_description !== undefined)
+    book.ar_description = updateBookDto.ar_description;
+
+  if (updateBookDto.author) book.author = updateBookDto.author;
+  if (updateBookDto.price) book.price = updateBookDto.price;
+  if (updateBookDto.discount !== undefined)
+    book.discount = updateBookDto.discount;
+
+  if (updateBookDto.total_pages !== undefined)
+    book.total_pages = updateBookDto.total_pages;
+  if (updateBookDto.rating_count !== undefined)
+    book.rating_count = updateBookDto.rating_count;
+  
+  if (updateBookDto.rating !== undefined) book.rating = updateBookDto.rating;
+
+  if (image) {
+    if (book.img) {
+      const imagePath = path.join(
+        process.cwd(),
+        'uploads',
+        path.basename(book.img),
+      );
+      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    }
+    book.img = `/uploads/${image.filename}`;
+  }
+
+  if (file) {
+    if (book.pdf) {
+      const pdfPath = path.join(
+        process.cwd(),
+        'uploads',
+        path.basename(book.pdf),
+      );
+      if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
+    }
+    book.pdf = `/uploads/${file.filename}`;
+  }
+
+  if (updateBookDto.categoryIds) {
+    book.categories = await this.categoryRepository.findByIds(
+      updateBookDto.categoryIds,
+    );
+  }
+
+  if (updateBookDto.price !== undefined || updateBookDto.discount !== undefined) {
+    await this.calculateAndUpdateDiscountedPrice(book);
+  }
+  
+  return await this.bookRepository.save(book);
+}
 
   async remove(id: number) {
     const book = await this.bookRepository.findOneBy({ id });
@@ -261,4 +265,29 @@ async findAll(paginationDto: PaginationDto) {
     await this.bookRepository.delete(id);
     return { message: 'Book deleted successfully' };
   }
+
+private async calculateAndUpdateDiscountedPrice(book: Book): Promise<Book> {
+  const discountedPrice = book.price * (1 - (book.discount / 100));
+  
+  book.discounted_price = parseFloat(discountedPrice.toFixed(2));
+  
+  return book;
+}
+
+
+async addRating(bookId: number, newRating: number): Promise<Book> {
+  const book = await this.bookRepository.findOne({ where: { id: bookId } });
+  if (!book) throw new NotFoundException(`Book with ID ${bookId} not found`);
+
+  const currentAverage = book.rating || 0;
+  const currentCount = book.rating_count || 0;
+
+  const newAverage = (currentAverage * currentCount + newRating) / (currentCount + 1);
+
+  book.rating = parseFloat(newAverage.toFixed(2));
+  book.rating_count = currentCount + 1;
+
+  return this.bookRepository.save(book);
+}
+
 }

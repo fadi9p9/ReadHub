@@ -10,6 +10,8 @@ import {
   UploadedFiles,
   UseInterceptors,
   ParseIntPipe,
+  ParseFloatPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -108,4 +110,16 @@ export class BooksController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.booksService.remove(id);
   }
+
+
+  @Post(':id/add-rating')
+async addRating(
+  @Param('id', ParseIntPipe) bookId: number,
+  @Query('rating', ParseFloatPipe) rating: number,
+) {
+  if (rating < 0 || rating > 5) {
+    throw new BadRequestException('Rating must be between 0 and 5');
+  }
+  return this.booksService.addRating(bookId, rating);
+}
 }

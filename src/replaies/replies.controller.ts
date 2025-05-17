@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { RepliesService } from './replies.service';
 import { CreateReplyDto } from './dto/create-replay.dto';
 import { UpdateReplayDto } from './dto/update-replay.dto';
+import { PaginationReplyDto } from './dto/pagination-reply.dto';
 @Controller('replies')
 export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}
@@ -12,8 +13,8 @@ export class RepliesController {
   }
 
   @Get()
-  findAll() {
-    return this.repliesService.findAll();
+  findAll(@Query() paginationDto: PaginationReplyDto) {
+    return this.repliesService.findAll(paginationDto);
   }
 
   @Get(':id')

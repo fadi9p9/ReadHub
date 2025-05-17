@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { PaginationFavoriteDto } from './dto/pagination-favorite.dto';
 
 @Controller('favorite')
 export class FavoriteController {
@@ -13,8 +14,8 @@ export class FavoriteController {
   }
 
   @Get()
-  findAll() {
-    return this.favoriteService.findAll();
+  findAll(@Query() paginationDto: PaginationFavoriteDto) {
+    return this.favoriteService.findAll(paginationDto);
   }
 
   @Get(':id')

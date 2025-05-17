@@ -34,9 +34,7 @@ export class CreateBookDto {
   @IsNumber()
   rating_count?: number = 0;
 
-  @IsOptional()
-  @IsNumber()
-  total_ratings?: number = 0;
+ 
 
   @IsOptional()
   @IsNumber()
