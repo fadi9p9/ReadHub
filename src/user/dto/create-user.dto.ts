@@ -24,4 +24,6 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   img?: string;
+
+  isVerified?: boolean;
 }

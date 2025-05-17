@@ -36,10 +36,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { CouponModule } from './coupon/coupon.module';
 import { QuestionAnswerModule } from './question-answer/question-answer.module';
 import { RepliesModule } from './replaies/replies.module';
+import { MailModule } from './auth/mail/mail.module';
 
 
 @Module({
   imports: [
+    MailModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

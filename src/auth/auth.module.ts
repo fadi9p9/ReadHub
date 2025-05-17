@@ -9,10 +9,14 @@ import { GoogleStrategy } from './google.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersService } from '../user/user.service';
 import { JwtStrategy } from './jwt.strategy';
+import { MailService } from './mail/mail.service';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy:[ 'google' , 'jwt' ]}),
+
+    MailModule,
+    PassportModule.register({ defaultStrategy: ['google', 'jwt'] }),
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -22,9 +26,10 @@ import { JwtStrategy } from './jwt.strategy';
       }),
       inject: [ConfigService],
     }),
+    ConfigModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, UsersService, JwtStrategy,],
+  providers: [AuthService, GoogleStrategy, UsersService, JwtStrategy, MailService],
   exports: [AuthService],
 })
 export class AuthModule {}

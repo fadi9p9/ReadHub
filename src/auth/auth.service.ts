@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { User } from '../user/entities/user.entity';
@@ -9,15 +9,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { TokenResponseDto } from './dto/token-response.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { MailService } from './mail/mail.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
   private revokedTokens: Set<string> = new Set();
   private readonly tokenExpiration = '1h';
+  logger: any;
 
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
@@ -42,14 +49,15 @@ export class AuthService {
         last_name: googleUser.lastName,
         password: hashedPassword,
         role: 'user',
-        img: googleUser.picture
+        img: googleUser.picture,
+        isVerified: true
       });
     }
 
     return this.generateTokenResponse(user);
   }
 
-  async signup(createUserDto: CreateUserDto): Promise<TokenResponseDto> {
+  async signup(createUserDto: CreateUserDto): Promise<void> {
     const existingUser = await this.usersRepository.findOne({ 
       where: { email: createUserDto.email }
     });
@@ -59,23 +67,26 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const newUser = await this.usersService.create({
+    await this.usersService.create({
       ...createUserDto,
       password: hashedPassword,
-      role: createUserDto.role || 'user'
+      role: createUserDto.role || 'user',
+      isVerified: false
     });
-    
-    return this.generateTokenResponse(newUser);
   }
 
   async login(loginDto: LoginDto): Promise<TokenResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { email: loginDto.email },
-      select: ['id', 'email', 'password', 'first_name', 'last_name', 'role', 'img'] 
+      select: ['id', 'email', 'password', 'first_name', 'last_name', 'role', 'img', 'isVerified'] 
     });
 
     if (!user) {
       throw new UnauthorizedException('بيانات الدخول غير صحيحة');
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException('الحساب غير مفعل، يرجى التحقق من خلال رمز OTP');
     }
 
     const isMatch = await bcrypt.compare(loginDto.password, user.password);
@@ -84,6 +95,166 @@ export class AuthService {
     }
 
     return this.generateTokenResponse(user);
+  }
+
+ 
+ 
+   async generateOtp(email: string): Promise<{ message: string }> {
+    try {
+        if (!email || !email.includes('@')) {
+            throw new HttpException(
+                'البريد الإلكتروني غير صالح',
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        const user = await this.usersRepository.findOne({ 
+            where: { email },
+            select: ['id', 'email', 'otpLastSentAt']
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('المستخدم غير موجود');
+        }
+
+        const now = new Date();
+        const lastSent = user.otpLastSentAt;
+        const cooldownPeriod = 60 * 1000; 
+
+        if (lastSent && now.getTime() - lastSent.getTime() < cooldownPeriod) {
+            const remainingTime = Math.ceil(
+                (cooldownPeriod - (now.getTime() - lastSent.getTime())) / 1000
+            );
+            throw new HttpException(
+                `الرجاء الانتظار ${remainingTime} ثانية قبل الطلب مرة أخرى`,
+                HttpStatus.TOO_MANY_REQUESTS
+            );
+        }
+
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); 
+
+        await this.usersRepository.update(user.id, {
+            otpCode: await bcrypt.hash(otp, 10),
+            otpExpiresAt,
+            otpLastSentAt: now
+        });
+
+        await this.mailService.sendOtpEmail(user.email, otp);
+        
+        return { 
+            message: 'تم إرسال رمز التحقق بنجاح' 
+        };
+
+    } catch (error) {
+        this.logger.error('فشل إرسال OTP:', error.message);
+        
+        if (error instanceof HttpException) {
+            throw error;
+        }
+        
+        throw new HttpException(
+            'حدث خطأ أثناء إرسال رمز التحقق',
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+}
+
+
+
+
+  async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<TokenResponseDto> {
+    const user = await this.usersRepository.findOne({ 
+      where: { email: verifyOtpDto.email },
+      select: ['id', 'email', 'otpCode', 'otpExpiresAt', 'first_name', 'last_name', 'role', 'img']
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.otpCode || !user.otpExpiresAt) {
+      throw new UnauthorizedException('No OTP code generated');
+    }
+
+    if (user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP code expired');
+    }
+
+    const isMatch = await bcrypt.compare(verifyOtpDto.otp, user.otpCode);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid OTP code');
+    }
+
+    await this.usersRepository.update(user.id, {
+      isVerified: true, 
+      otpCode: undefined,
+      otpExpiresAt: undefined,
+    });
+
+    return this.generateTokenResponse(user);
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.generateOtp(forgotPasswordDto.email);
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ 
+      where: { email: resetPasswordDto.email },
+      select: ['id', 'otpCode', 'otpExpiresAt']
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.otpCode || !user.otpExpiresAt) {
+      throw new UnauthorizedException('No OTP code generated');
+    }
+
+    if (user.otpExpiresAt < new Date()) {
+      throw new UnauthorizedException('OTP code expired');
+    }
+
+    const isMatch = await bcrypt.compare(resetPasswordDto.otp, user.otpCode);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid OTP code');
+    }
+
+    const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+    
+    await this.usersRepository.update(user.id, {
+      password: hashedPassword,
+  otpCode: undefined,
+  otpExpiresAt: undefined,
+    });
+
+    return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ 
+      where: { id: userId },
+      select: ['id', 'password']
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(changePasswordDto.oldPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    
+    await this.usersRepository.update(user.id, {
+      password: hashedPassword,
+    });
+
+    return { message: 'Password changed successfully' };
   }
 
   private async generateTokenResponse(user: User): Promise<TokenResponseDto> {
@@ -154,5 +325,7 @@ export class AuthService {
       return null;
     }
   }
-}
 
+
+  
+}

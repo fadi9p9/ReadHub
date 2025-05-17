@@ -23,7 +23,7 @@ export class User {
   @Column({ type: 'enum', enum: ['admin', 'user'], default: 'user' })
   role: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: true ,nullable: false })
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
@@ -40,6 +40,21 @@ export class User {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
+
+  @Column({ name: 'otp_code', nullable: true })
+otpCode?: string;
+
+@Column({ name: 'otp_expires_at', nullable: true })
+otpExpiresAt?: Date;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ name: 'otp_last_sent_at', nullable: true })
+otpLastSentAt?: Date;
+
+@Column({ name: 'otp_attempts', default: 0 })
+otpAttempts: number;
 
   @OneToMany(() => Cart, (cart) => cart.user)
   carts: Cart[];
