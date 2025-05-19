@@ -37,10 +37,14 @@ import { CouponModule } from './coupon/coupon.module';
 import { QuestionAnswerModule } from './question-answer/question-answer.module';
 import { RepliesModule } from './replaies/replies.module';
 import { MailModule } from './auth/mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ReminderService } from './reminder/reminder.service';
+import { MailService } from './auth/mail/mail.service';
 
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MailModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -94,6 +98,6 @@ import { MailModule } from './auth/mail/mail.module';
     
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,ReminderService,MailService],
 })
 export class AppModule {}

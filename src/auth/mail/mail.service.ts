@@ -80,4 +80,74 @@ export class MailService {
   }
 }
 
+async sendReminderEmail(email: string, name: string): Promise<void> {
+  const html = `
+  <div style="
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #e0f7fa, #f0f4c3);
+  padding: 40px;
+  border-radius: 16px;
+  max-width: 600px;
+  margin: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: fadeSlideIn 1.5s ease-out;
+">
+  <style>
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+
+  <h2 style="color: #00796b; text-align: center; animation: pulse 2s infinite;">Hello ${name},</h2>
+
+  <p style="font-size: 16px; color: #444; text-align: center;">
+    We've missed you at <strong>READHUB</strong>!<br>
+    Discover new content curated just for you.
+  </p>
+
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="https://your-domain.com" style=" 
+      display: inline-block;
+      background: #00796b;
+      color: white;
+      padding: 12px 28px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      animation: pulse 3s infinite;
+    ">
+      Visit READHUB Now
+    </a>
+  </div>
+
+  <p style="font-size: 12px; color: #888; text-align: center; margin-top: 40px;">
+    If you didn’t request this email, you can safely ignore it.
+  </p>
+</div>
+
+  `;
+
+  await this.transporter.sendMail({
+    from: this.configService.get('EMAIL_FROM'),
+    to: email,
+    subject: 'We miss you at READHUB!',
+    html,
+  });
+}
+
+
 }
