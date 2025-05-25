@@ -27,8 +27,8 @@ export class CartsController {
     return this.cartsService.update(+id, updateCartDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cartsService.remove(+id);
-  }
+ @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.cartsService.remove(body.ids);
+}
 }

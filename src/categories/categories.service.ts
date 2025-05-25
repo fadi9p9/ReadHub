@@ -77,11 +77,27 @@ export class CategoriesService {
     return this.categoryRepository.save({ ...category, ...updateCategoryDto });
   }
 
-  async remove(id: number) {
-    const result = await this.categoryRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
-    }
-    return { message: 'Category deleted successfully' };
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.categoryRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No categories found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} categories deleted successfully`, 
+      warning: 'Some categories were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} categories deleted successfully` 
+  };
+}
+
 }

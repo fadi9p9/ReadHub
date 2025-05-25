@@ -129,11 +129,27 @@ export class BookQuestionsService {
     return this.questionRepository.save(question);
   }
 
-  async remove(id: number) {
-    const result = await this.questionRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Question with ID ${id} not found`);
-    }
-    return { message: 'Question deleted successfully' };
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.questionRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No questions found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} questions deleted successfully`, 
+      warning: 'Some questions were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} questions deleted successfully` 
+  };
+}
+
 }

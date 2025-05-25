@@ -23,13 +23,10 @@ export class FavoriteController {
     return this.favoriteService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFavoriteDto: UpdateFavoriteDto) {
-    return this.favoriteService.update(+id, updateFavoriteDto);
-  }
+  
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.favoriteService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.favoriteService.remove(body.ids);
+}
 }

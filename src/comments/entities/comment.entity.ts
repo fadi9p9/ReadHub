@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
 import { Like } from '../../likes/entities/like.entity';
@@ -9,7 +9,7 @@ export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User, (user) => user.comments,{onDelete: 'CASCADE'})
   user: User;
 
   @ManyToOne(() => Book, (book) => book.comments,{
@@ -26,11 +26,16 @@ export class Comment {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
+    @UpdateDateColumn()
+  updated_at: Date;
+
    @OneToMany(() => Reply, (reply) => reply.comment, {
     onDelete: 'CASCADE' 
   })
   replies: Reply[];
 
+@Column({ default: 0 }) 
+  likesCount: number;
 
   @OneToMany(() => Like, (like) => like.comment, {
     onDelete: 'CASCADE'

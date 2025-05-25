@@ -30,8 +30,8 @@ export class RepliesController {
     return this.repliesService.update(id, updateReplyDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.repliesService.remove(id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.repliesService.remove(body.ids);
+}
 }

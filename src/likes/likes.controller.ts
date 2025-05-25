@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Req } from '@nestjs/common';
 import { LikesService } from './likes.service';
 import { CreateLikeDto } from './dto/create-like.dto';
 import { UpdateLikeDto } from './dto/update-like.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
-
-  @Post()
-  create(@Body() createLikeDto: CreateLikeDto) {
-    return this.likesService.create(createLikeDto);
+ 
+  
+  @Post(':commentId/like')
+  async toggleLike(
+    @Param('commentId') commentId: number,
+    @Body() body: { userId: number },
+  ) {
+    return this.likesService.toggleLike(body.userId, commentId);
   }
 
   @Get()
@@ -32,3 +37,7 @@ export class LikesController {
     return this.likesService.remove(+id);
   }
 }
+function CurrentUser(): (target: LikesController, propertyKey: "toggleLike", parameterIndex: 0) => void {
+  throw new Error('Function not implemented.');
+}
+

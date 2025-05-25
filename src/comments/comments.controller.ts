@@ -33,8 +33,8 @@ export class CommentsController {
     return this.commentsService.update(+id, updateCommentDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentsService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.commentsService.remove(body.ids);
+}
 }

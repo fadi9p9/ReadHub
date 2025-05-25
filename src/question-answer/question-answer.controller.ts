@@ -27,8 +27,8 @@ export class QuestionAnswersController {
     return this.questionAnswersService.update(+id, updateQuestionAnswerDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.questionAnswersService.remove(+id);
-  }
+ @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.questionAnswersService.remove(body.ids);
+}
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { QuizResult } from '../../quiz-result/entities/quiz-result.entity';
 import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
@@ -14,6 +14,8 @@ export class Quiz {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   ar_title: string;
+    @UpdateDateColumn()
+  updated_at: Date;
 
   @ManyToOne(() => Book, (book) => book.quizzes, { onDelete: 'CASCADE' })
   book: Book;

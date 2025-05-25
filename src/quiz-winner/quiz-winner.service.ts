@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QuizWinner } from './entities/quiz-winner.entity';
@@ -90,7 +90,27 @@ export class QuizWinnersService {
     return this.findOne(id);
   }
 
-  remove(id: number) {
-    return this.quizWinnerRepository.delete(id);
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.quizWinnerRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No quiz winner found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} quiz winner deleted successfully`, 
+      warning: 'Some quiz winner were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} quiz winner deleted successfully` 
+  };
+}
+
 }

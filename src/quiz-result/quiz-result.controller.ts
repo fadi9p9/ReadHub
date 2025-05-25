@@ -27,8 +27,8 @@ export class QuizResultsController {
     return this.quizResultsService.update(+id, updateQuizResultDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.quizResultsService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.quizResultsService.remove(body.ids);
+}
 }

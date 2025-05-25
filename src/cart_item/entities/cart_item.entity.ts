@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { Cart } from '../../carts/entities/cart.entity';
 
@@ -6,6 +6,10 @@ import { Cart } from '../../carts/entities/cart.entity';
 export class CartItem {
   @PrimaryGeneratedColumn()
   id: number;
+
+    @UpdateDateColumn()
+  updated_at: Date;
+
 
   @ManyToOne(() => Cart, (cart) => cart.items,{
     onDelete: 'CASCADE'

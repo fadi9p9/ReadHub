@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, UpdateDateColumn } from 'typeorm';
 import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
 
 @Entity()
@@ -12,6 +12,8 @@ export class Coupon {
   @Column()
   discount_value: number;
   
+    @UpdateDateColumn()
+  updated_at: Date;
 
   @OneToOne(() => QuizWinner, winner => winner.coupon)
   winner: QuizWinner;

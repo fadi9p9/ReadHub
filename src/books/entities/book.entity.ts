@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, UpdateDateColumn } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { BookQuestion } from '../../book-question/entities/book-question.entity';
@@ -53,17 +53,29 @@ discounted_price: number | null;
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @ManyToMany(() => Category)
+  @UpdateDateColumn()
+  updated_at: Date;
+
+
+  @ManyToMany(() => Category,{
+  })
   @JoinTable({ name: 'book_categories' })
   categories: Category[];
 
-  @OneToMany(() => CartItem, (cartItem) => cartItem.book)
+  @OneToMany(() => CartItem, (cartItem) => cartItem.book,{
+    onDelete: 'CASCADE',
+  })
   cartItems: CartItem[];
 
-  @OneToMany(() => Comment, (comment) => comment.book)
-  comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.book, {
+  onDelete: 'CASCADE',
+})
+comments: Comment[];
+likeCount: number;
+
   
   @OneToMany(() => BookQuestion, (question) => question.book, {
+    // cascade: true,
     onDelete: 'CASCADE',
   })
   questions: BookQuestion[];
@@ -73,6 +85,8 @@ discounted_price: number | null;
   })
   favorites: Favorite[];
 
-  @OneToMany(() => Quiz, (quiz) => quiz.book)
+  @OneToMany(() => Quiz, (quiz) => quiz.book,{
+    onDelete: 'CASCADE',
+  })
   quizzes: Quiz[];
 }

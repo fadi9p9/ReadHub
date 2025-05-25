@@ -27,8 +27,8 @@ export class QuizWinnersController {
     return this.quizWinnersService.update(+id, updateQuizWinnerDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.quizWinnersService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.quizWinnersService.remove(body.ids);
+}
 }

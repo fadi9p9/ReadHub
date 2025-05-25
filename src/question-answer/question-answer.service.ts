@@ -117,7 +117,27 @@ async update(id: number, dto: UpdateQuestionAnswerDto) {
   return this.questionAnswerRepository.save(answer);
 }
 
-  remove(id: number) {
-    return this.questionAnswerRepository.delete(id);
+ async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.questionAnswerRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No questionAnswer found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} questionAnswer deleted successfully`, 
+      warning: 'Some questionAnswer were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} questionAnswer deleted successfully` 
+  };
+}
+
 }

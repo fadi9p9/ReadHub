@@ -12,6 +12,7 @@ import {
   ParseIntPipe,
   ParseFloatPipe,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -71,6 +72,15 @@ export class BooksController {
     return this.booksService.findOne(id, lang);
   }
 
+
+   @Get('/comment/:id')
+  async findComment(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('lang') lang?: string,
+  ) {
+    return this.booksService.findComment(id, lang);
+  }
+
   @Patch(':id')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -106,10 +116,10 @@ export class BooksController {
     );
   }
 
-  @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.booksService.remove(id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.booksService.remove(body.ids);
+}
 
 
   @Post(':id/add-rating')
@@ -122,4 +132,33 @@ async addRating(
   }
   return this.booksService.addRating(bookId, rating);
 }
+
+
+
+
+
+  @Post(':id/categories')
+  addCategories(
+    @Param('id') id: number,
+    @Body() { categoryIds }: { categoryIds: number[] }
+  ) {
+    return this.booksService.addCategories(id, categoryIds);
+  }
+
+  @Patch(':id/categories')
+  updateCategories(
+    @Param('id') id: number,
+    @Body() { categoryIds }: { categoryIds: number[] }
+  ) {
+    return this.booksService.updateCategories(id, categoryIds);
+  }
+
+  @Delete(':id/categories')
+  removeCategories(
+    @Param('id') id: number,
+    @Body() { categoryIds }: { categoryIds: number[] }
+  ) {
+    return this.booksService.removeCategories(id, categoryIds);
+  }
+
 }

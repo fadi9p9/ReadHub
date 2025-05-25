@@ -15,13 +15,44 @@ export class FavoriteService {
     private favoriteRepository: Repository<Favorite>,
   ) {}
 
-  async create(createFavoriteDto: CreateFavoriteDto) {
+//   async create(createFavoriteDto: CreateFavoriteDto) {
+//   const { userId, bookId } = createFavoriteDto;
+//     const exists = await this.favoriteRepository.findOne({ where: { user: { id: userId }, book: { id: bookId } } });
+//     if (exists) {
+//         return { message: 'الكتاب موجود بالفعل في المفضلة' };
+//     }
+//     return this.favoriteRepository.save({ user: { id: userId }, book: { id: bookId } });
+// }
+
+
+async create(createFavoriteDto: CreateFavoriteDto): Promise<{ message: string, action: 'added' | 'removed' }> {
   const { userId, bookId } = createFavoriteDto;
-    const exists = await this.favoriteRepository.findOne({ where: { user: { id: userId }, book: { id: bookId } } });
-    if (exists) {
-        return { message: 'الكتاب موجود بالفعل في المفضلة' };
-    }
-    return this.favoriteRepository.save({ user: { id: userId }, book: { id: bookId } });
+  
+  const existingFavorite = await this.favoriteRepository.findOne({
+    where: {
+      user: { id: userId },
+      book: { id: bookId }
+    },
+    relations: ['user', 'book'] 
+    });
+
+  if (existingFavorite) {
+    await this.favoriteRepository.remove(existingFavorite);
+    return { 
+      message: 'تمت إزالة الكتاب من المفضلة بنجاح',
+      action: 'removed'
+    };
+  } else {
+    const newFavorite = this.favoriteRepository.create({
+      user: { id: userId },
+      book: { id: bookId }
+    });
+    await this.favoriteRepository.save(newFavorite);
+    return {
+      message: 'تمت إضافة الكتاب إلى المفضلة بنجاح',
+      action: 'added'
+    };
+  }
 }
   async findAll(paginationDto: PaginationFavoriteDto): Promise<{data: Favorite[], count: number}> {
     const { limit = 10, page = 1, userId, bookId } = paginationDto;
@@ -90,24 +121,27 @@ export class FavoriteService {
 
     return favorite;
   }
-
-  async update(id: number, updateFavoriteDto: UpdateFavoriteDto): Promise<Favorite> {
-    const favorite = await this.findOne(id);
-    
-    if (updateFavoriteDto.bookId) {
-      favorite.book = { id: updateFavoriteDto.bookId } as Book;
-    }
-    if (updateFavoriteDto.userId) {
-      favorite.user = { id: updateFavoriteDto.userId } as User;
-    }
-
-    return await this.favoriteRepository.save(favorite);
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.favoriteRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No favorite found with the provided IDs`);
   }
-
-  async remove(id: number): Promise<void> {
-    const result = await this.favoriteRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Favorite with ID ${id} not found`);
-    }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} favorite deleted successfully`, 
+      warning: 'Some favorite were not found' 
+    };
   }
+  
+  return { 
+    message: `${affectedRows} favorite deleted successfully` 
+  };
+}
+
 }

@@ -34,8 +34,8 @@ export class BookQuestionsController {
     return this.questionsService.update(id, updateDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.questionsService.remove(id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.questionsService.remove(body.ids);
+}
 }

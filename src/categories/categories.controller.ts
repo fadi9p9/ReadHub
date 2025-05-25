@@ -28,8 +28,8 @@ export class CategoriesController {
     return this.categoriesService.update(+id, updateCategoryDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.categoriesService.remove(body.ids);
+}
 }

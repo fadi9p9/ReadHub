@@ -145,21 +145,26 @@ export class CommentsService {
   return this.commentRepository.save(comment);
 }
 
-  async remove(id: number) {
-  const comment = await this.commentRepository.findOne({
-    where: { id },
-    relations: ['replies', 'likes']
-  });
-
-  if (!comment) {
-    throw new NotFoundException(`Comment with ID ${id} not found`);
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.commentRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No comments found with the provided IDs`);
   }
-
-  await this.commentRepository.remove(comment);
-
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} comments deleted successfully`, 
+      warning: 'Some comments were not found' 
+    };
+  }
+  
   return { 
-    status: 'success',
-    message: 'Comment and its associated replies/likes deleted successfully'
+    message: `${affectedRows} comments deleted successfully` 
   };
 }
 }

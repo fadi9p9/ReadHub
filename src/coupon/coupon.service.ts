@@ -37,13 +37,27 @@ async findOne(id: number) {
     return this.couponRepository.save({id, ...updateCouponDto});
   }
 
-  async remove(id: number) {
-  const result = await this.couponRepository.delete(id);
+ async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
   
-  if (result.affected === 0) {
-    throw new NotFoundException(`Coupon with ID ${id} not found`);
+  const deleteResult = await this.couponRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No coupons found with the provided IDs`);
   }
   
-  return { message: 'Coupon deleted successfully' };
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} coupons deleted successfully`, 
+      warning: 'Some coupons were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} coupons deleted successfully` 
+  };
 }
+
 }

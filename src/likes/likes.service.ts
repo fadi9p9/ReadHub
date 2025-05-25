@@ -6,6 +6,7 @@ import { CreateLikeDto } from './dto/create-like.dto';
 import { UpdateLikeDto } from './dto/update-like.dto';
 import { User } from '../user/entities/user.entity';
 import { Comment } from '../comments/entities/comment.entity';
+import { Book } from 'src/books/entities/book.entity';
 @Injectable()
 export class LikesService {
   constructor(
@@ -13,42 +14,43 @@ export class LikesService {
      private readonly likeRepository: Repository<Like>,
       @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
-     
   ) {}
+ // likes.service.ts
+async toggleLike(userId: number, commentId: number): Promise<Comment> {
+  return this.commentsRepository.manager.transaction(async (manager) => {
+    // 1. التحقق من وجود التعليق والمستخدم
+    const comment = await manager.findOne(Comment, {
+      where: { id: commentId },
+      lock: { mode: 'pessimistic_write' }
+    });
+    
+    const user = await manager.findOne(User, { where: { id: userId } });
 
-  async create(createLikeDto: CreateLikeDto) {
-    try {
-      const existingLike = await this.likeRepository.findOne({
-        where: {
-          user: { id: createLikeDto.userId },
-          comment: { id: createLikeDto.commentId },
-        },
-      });
+    if (!comment) throw new NotFoundException('التعليق غير موجود');
+    if (!user) throw new NotFoundException('المستخدم غير موجود');
 
-      if (existingLike) {
-        throw new ConflictException('تم إضافة الإعجاب مسبقًا');
-      }
+    // 2. البحث عن إعجاب موجود
+    const existingLike = await manager.findOne(Like, {
+      where: { userId, commentId }
+    });
 
-      const newLike = this.likeRepository.create({
-        user: { id: createLikeDto.userId },
-        comment: { id: createLikeDto.commentId }
-      });
-      await this.likeRepository.save(newLike);
-
-      return {
-        message: 'تمت إضافة الإعجاب بنجاح',
-        like: newLike,
-      };
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new ConflictException('الإعجاب موجود مسبقًا');
-      }
-      throw error;
+    // 3. التبديل بين الإعجاب والإزالة
+    if (existingLike) {
+      await manager.delete(Like, existingLike.id);
+      comment.likesCount = Math.max(0, comment.likesCount - 1);
+    } else {
+      const newLike = manager.create(Like, { userId, commentId });
+      await manager.save(newLike);
+      comment.likesCount += 1;
     }
-  }
+
+    // 4. حفظ التغييراتء
+    return manager.save(comment);
+  });
+}
+
   findAll() {
     return this.likeRepository.find({ relations: ['comment', 'user'] ,
       select: {

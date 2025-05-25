@@ -27,8 +27,8 @@ export class CouponsController {
     return this.couponsService.update(+id, updateCouponDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.couponsService.remove(+id);
-  }
+ @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.couponsService.remove(body.ids);
+}
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { QuestionAnswer } from '../../question-answer/entities/question-answer.entity';
 import { Quiz } from '../../quiz/entities/quiz.entity';
@@ -12,7 +12,9 @@ export class BookQuestion {
   @Column({ name: 'book_id' })
   bookId: number;
 
-  @ManyToOne(() => Book, (book) => book.questions)
+  @ManyToOne(() => Book, (book) => book.questions,{
+    onDelete:'CASCADE'
+  })
   book: Book;
 
   @Column({ name: 'question_text', type: 'text' })
@@ -33,12 +35,20 @@ export class BookQuestion {
   @Column({ name: 'correct_option', type: 'enum', enum: ['a', 'b', 'c', 'd'] })
   correct_option: string;
 
+    @UpdateDateColumn()
+  updated_at: Date;
+
+
   @OneToMany(() => QuestionAnswer, (answer) => answer.question)
   answers: QuestionAnswer[];
 
-  @ManyToOne(() => Quiz, (quiz) => quiz.questions)
+  @ManyToOne(() => Quiz, (quiz) => quiz.questions,{
+    onDelete:'CASCADE'
+  })
   quiz: Quiz;
 
-  @OneToMany(() => BookQuestionTranslation, (trans) => trans.question)
+  @OneToMany(() => BookQuestionTranslation, (trans) => trans.question,{
+    onDelete: 'CASCADE',
+  })
   translations: BookQuestionTranslation[];
 }

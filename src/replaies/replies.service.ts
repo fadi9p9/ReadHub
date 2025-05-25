@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reply } from './entities/replay.entity';
@@ -134,7 +134,26 @@ export class RepliesService {
     */
 }
 
-  remove(id: number) {
-    return this.replyRepository.delete(id);
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.replyRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No replies found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} replies deleted successfully`, 
+      warning: 'Some replies were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} replies deleted successfully` 
+  };
+}
 }

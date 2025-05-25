@@ -8,7 +8,6 @@ import { PaginationDto } from './dto/pagination.dto';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Category } from '../categories/entities/category.entity';
-
 @Injectable()
 export class BooksService {
   constructor(
@@ -17,7 +16,6 @@ export class BooksService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
   ) {}
-
    private parseCategoryIds(categoryIds: any): number[] {
     if (!categoryIds) return [];
     
@@ -29,7 +27,6 @@ export class BooksService {
       .map(id => parseInt(String(id).trim(), 10))
       .filter(id => !isNaN(id) && id > 0);
   }
-
   async create(
   createBookDto: CreateBookDto,
   image?: Express.Multer.File,
@@ -51,8 +48,8 @@ export class BooksService {
   book.rating_count = createBookDto.rating_count || 0;
   book.rating = createBookDto.rating || 0;
 
-  if (image) book.img = `/uploads/${image.filename}`;
-  if (file) book.pdf = `/uploads/${file.filename}`;
+  if (image) book.img = `/uploads/images/${image.filename}`;
+  if (file) book.pdf = `/uploads/pdfs/${file.filename}`;
 
   if (createBookDto.categoryIds) {
     book.categories = await this.categoryRepository.findByIds(
@@ -64,9 +61,28 @@ export class BooksService {
   
   return await this.bookRepository.save(book);
 }
+async findOne(id: number, lang?: string) {
+    const book = await this.bookRepository.findOne({
+      where: { id },
+      relations: ['categories'],
+    });
 
- 
+    if (!book) {
+      throw new NotFoundException(`Book with ID ${id} not found`);
+    }
+
+    if (lang === 'ar') {
+      return {
+        ...book,
+        title: book.ar_title || book.title,
+        description: book.ar_description || book.description,
+      };
+    }
+
+    return book;
+}
 async findAll(paginationDto: PaginationDto) {
+  
     const {
         search,
         minPrice,
@@ -146,13 +162,56 @@ async findAll(paginationDto: PaginationDto) {
         },
     };
 }
-
-
-  async findOne(id: number, lang?: string) {
+  async findComment(id: number, lang?: string) {
     const book = await this.bookRepository.findOne({
       where: { id },
-      relations: ['categories'],
+      relations: {
+        comments: {
+          user: true,
+          replies: {
+            user: true
+          },
+          likes: {
+            user: true
+          }
+        }
+      },
+      select: {
+        id: true,
+        title: true,
+        comments: {
+          id: true,
+          text: true,
+          created_at: true,
+          user: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            img: true
+          },
+          replies: {
+            id: true,
+            text: true,
+            created_at: true,
+            user: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              img: true,
+            }
+          },
+          likes: {
+            id: true,
+            user: {
+              id: true,
+              first_name: true,
+              last_name: true,
+            }
+          }
+        }
+      }
     });
+  
 
     if (!book) {
       throw new NotFoundException(`Book with ID ${id} not found`);
@@ -167,8 +226,7 @@ async findAll(paginationDto: PaginationDto) {
     }
 
     return book;
-  }
-
+}
  async update(
   id: number,
   updateBookDto: UpdateBookDto,
@@ -241,31 +299,28 @@ async findAll(paginationDto: PaginationDto) {
   
   return await this.bookRepository.save(book);
 }
-
-  async remove(id: number) {
-    const book = await this.bookRepository.findOneBy({ id });
-    if (!book) {
-      throw new NotFoundException(`Book with ID ${id} not found`);
-    }
-
-    if (book.img) {
-      const imagePath = path.join(
-        process.cwd(),
-        'uploads',
-        path.basename(book.img),
-      );
-      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-    }
-
-    if (book.pdf) {
-      const pdfPath = path.join(process.cwd(), 'uploads', path.basename(book.pdf));
-      if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
-    }
-
-    await this.bookRepository.delete(id);
-    return { message: 'Book deleted successfully' };
+  async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.bookRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No books found with the provided IDs`);
   }
-
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} books deleted successfully`, 
+      warning: 'Some books were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} books deleted successfully` 
+  };
+}
 private async calculateAndUpdateDiscountedPrice(book: Book): Promise<Book> {
   const discountedPrice = book.price * (1 - (book.discount / 100));
   
@@ -273,8 +328,6 @@ private async calculateAndUpdateDiscountedPrice(book: Book): Promise<Book> {
   
   return book;
 }
-
-
 async addRating(bookId: number, newRating: number): Promise<Book> {
   const book = await this.bookRepository.findOne({ where: { id: bookId } });
   if (!book) throw new NotFoundException(`Book with ID ${bookId} not found`);
@@ -290,4 +343,62 @@ async addRating(bookId: number, newRating: number): Promise<Book> {
   return this.bookRepository.save(book);
 }
 
+async addCategories(bookId: number, categoryIds: number[]): Promise<Book> {
+  const book = await this.bookRepository.findOne({
+    where: { id: bookId },
+    relations: ['categories'],
+    select: {
+      categories: {
+        id: true,
+        title: true,
+      },
+      id: true,
+      title: true,
+
+    }
+  });
+
+  if (!book) {
+    throw new NotFoundException(`Book with ID ${bookId} not found`);
+  }
+
+  const categories = await this.categoryRepository.findByIds(categoryIds);
+  book.categories = [...book.categories, ...categories];
+
+  return this.bookRepository.save(book);
+}
+
+
+async updateCategories(bookId: number, categoryIds: number[]): Promise<Book> {
+  const book = await this.bookRepository.findOne({
+    where: { id: bookId },
+    relations: ['categories'],
+  });
+
+  if (!book) {
+    throw new NotFoundException(`Book with ID ${bookId} not found`);
+  }
+
+  const categories = await this.categoryRepository.findByIds(categoryIds);
+  book.categories = categories;
+
+  return this.bookRepository.save(book);
+}
+
+async removeCategories(bookId: number, categoryIds: number[]): Promise<Book> {
+  const book = await this.bookRepository.findOne({
+    where: { id: bookId },
+    relations: ['categories'],
+  });
+
+  if (!book) {
+    throw new NotFoundException(`Book with ID ${bookId} not found`);
+  }
+
+  book.categories = book.categories.filter(
+    category => !categoryIds.includes(category.id)
+  );
+
+  return this.bookRepository.save(book);
+}
 }

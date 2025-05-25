@@ -120,23 +120,55 @@ export class UsersService {
     }
   }
 
-  async remove(id: number): Promise<void> {
-    const user = await this.findOne(id);
-
-    if (user.img) {
-      const imagePath = path.join(
-        process.cwd(),
-        'uploads',
-        'users',
-        path.basename(user.img),
-      );
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+ async remove(ids: number[] | number): Promise<{ 
+  message: string; 
+  warning?: string; 
+  deletedCount?: number;
+}> {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const users = await Promise.all(
+    idsArray.map(id => this.findOne(id).catch(() => null))
+  );
+  
+  await Promise.all(
+    users.map(user => {
+      if (user?.img) {
+        const imagePath = path.join(
+          process.cwd(),
+          'uploads',
+          'users',
+          path.basename(user.img),
+        );
+        
+        if (fs.existsSync(imagePath)) {
+          return fs.promises.unlink(imagePath);
+        }
       }
-    }
+      return Promise.resolve();
+    })
+  );
 
-    await this.userRepository.remove(user);
+  const deleteResult = await this.userRepository.delete(idsArray);
+  const affectedRows = deleteResult.affected || 0;
+
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No users found with the provided IDs`);
   }
+
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} users deleted successfully`, 
+      warning: 'Some users were not found or could not be deleted',
+      deletedCount: affectedRows,
+    };
+  }
+
+  return { 
+    message: `${affectedRows} users deleted successfully`,
+    deletedCount: affectedRows,
+  };
+}
 
 
   async findInactiveSince(date: Date): Promise<User[]> {

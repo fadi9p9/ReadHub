@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique, Column, UpdateDateColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Book } from '../../books/entities/book.entity';
 
@@ -8,7 +8,11 @@ export class Favorite {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.favorites)
+      @UpdateDateColumn()
+  updated_at: Date;
+
+
+  @ManyToOne(() => User, (user) => user.favorites,{onDelete: 'CASCADE'})
   user: User;
 
   @ManyToOne(() => Book, (book) => book.favorites,{

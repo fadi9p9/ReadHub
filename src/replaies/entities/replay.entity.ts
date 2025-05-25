@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 
@@ -7,7 +7,10 @@ export class Reply {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.replies)
+      @UpdateDateColumn()
+  updated_at: Date;
+
+  @ManyToOne(() => User, (user) => user.replies,{onDelete: 'CASCADE'})
   user: User;
 
 @ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })

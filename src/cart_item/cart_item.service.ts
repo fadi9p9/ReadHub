@@ -30,13 +30,28 @@ export class CartItemsService {
       ...updateCartItemDto});
   }
 
- async remove(id: number) {
-    const result= this.cartItemRepository.delete(id);
-     if ((await result).affected === 0) {
-        throw new NotFoundException(`cart_item with ID ${id} not found`);
-      }
-      
-      return { message: 'cart_item deleted successfully' };
-    }
+ async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.cartItemRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No cartItems found with the provided IDs`);
+  }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} cartItems deleted successfully`, 
+      warning: 'Some cartItems were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} cartItems deleted successfully` 
+  };
+}
+
   
 }

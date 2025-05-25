@@ -28,8 +28,8 @@ export class QuizzesController {
     return this.quizzesService.update(+id, updateQuizDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.quizzesService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.quizzesService.remove(body.ids);
+}
 }

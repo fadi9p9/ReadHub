@@ -75,11 +75,27 @@ export class QuizResultsService {
   return this.quizResultRepository.save(result);
 }
 
-  async remove(id: number) {
-    const result = await this.quizResultRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('QuizResult not found');
-    }
-    return { message: 'QuizResult deleted successfully' };
+ async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.quizResultRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No quiz result found with the provided IDs`);
   }
+  
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} quiz result deleted successfully`, 
+      warning: 'Some quiz result were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} quiz result deleted successfully` 
+  };
+}
+
 }

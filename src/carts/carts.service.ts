@@ -21,20 +21,17 @@ export class CartsService {
 
   async findAll() {
   return this.cartRepository.find({
-    relations: ['user', 'items'],
+    relations: ['user'],
     select: {
       id: true,
       created_at: true,
+      updated_at:true,
+      status: true,
       user: {
         id: true,
+        email: true,
       },
-      items: {
-        id: true,
-        quantity: true,
-        book: {
-          id: true,
-        },
-      },
+      
     }
   });
 }
@@ -51,8 +48,11 @@ export class CartsService {
     select: {
       id: true,
       created_at: true,
+      updated_at:true,
+      status: true,
       user: {
         id: true,
+        email: true,
       },
       items: {
         id: true,
@@ -80,22 +80,37 @@ export class CartsService {
 
   async update(id: number, updateCartDto: UpdateCartDto) {
     const updateData: any = {
+      ...(updateCartDto.status && { status: updateCartDto.status }),
       ...(updateCartDto.userId && { user: { id: updateCartDto.userId } }),
       ...(updateCartDto.items && { 
         items: updateCartDto.items.map(itemId => ({ id: itemId })) 
       })
     };
   
-    await this.cartRepository.save({id, updateData});
+    await this.cartRepository.save({id, updateData, status: updateCartDto.status });
     return this.findOne(id);
   }
 
- async remove(id: number) {
-    const result= this.cartRepository.delete(id);
-   if ((await result).affected === 0) {
-    throw new NotFoundException(`cart with ID ${id} not found`);
+async remove(ids: number[] | number) {
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  
+  const deleteResult = await this.cartRepository.delete(idsArray);
+  
+  const affectedRows = deleteResult.affected || 0;
+  
+  if (affectedRows === 0) {
+    throw new NotFoundException(`No carts found with the provided IDs`);
   }
   
-  return { message: 'cart deleted successfully' };
+  if (affectedRows < idsArray.length) {
+    return { 
+      message: `Only ${affectedRows} carts deleted successfully`, 
+      warning: 'Some carts were not found' 
+    };
+  }
+  
+  return { 
+    message: `${affectedRows} carts deleted successfully` 
+  };
 }
 }

@@ -67,8 +67,8 @@ export class UserController {
     return this.userService.update(+id, updateUserDto, img);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
-  }
+  @Delete()
+async remove(@Body() body: { ids: number[] }) {
+  return this.userService.remove(body.ids);
+}
 }

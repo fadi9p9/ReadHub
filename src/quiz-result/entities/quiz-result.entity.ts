@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { Quiz } from '../../quiz/entities/quiz.entity';
 import { User } from '../../user/entities/user.entity';
 
@@ -7,12 +7,15 @@ export class QuizResult {
   @PrimaryGeneratedColumn()
   id: number;
 
+      @UpdateDateColumn()
+  updated_at: Date;
+
   @ManyToOne(() => Quiz, (quiz) => quiz.results,{
     onDelete: 'CASCADE'
   })
   quiz: Quiz;
 
-  @ManyToOne(() => User, (user) => user.quizResults)
+  @ManyToOne(() => User, (user) => user.quizResults,{onDelete: 'CASCADE'})
   user: User;
 
   @Column({ type: 'int' })

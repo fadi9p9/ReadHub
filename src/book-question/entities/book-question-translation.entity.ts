@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { BookQuestion } from './book-question.entity';
 
 @Entity('book_question_translations')
@@ -23,7 +23,12 @@ export class BookQuestionTranslation {
 
   @Column({ name: 'option_d', length: 255 })
   option_d: string;
+    @UpdateDateColumn()
+  updated_at: Date;
 
-  @ManyToOne(() => BookQuestion, (question) => question.translations)
+
+  @ManyToOne(() => BookQuestion, (question) => question.translations,{
+    onDelete:'CASCADE'
+  })
   question: BookQuestion;
 }
