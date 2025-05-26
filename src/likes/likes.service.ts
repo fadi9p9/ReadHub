@@ -17,39 +17,39 @@ export class LikesService {
     @InjectRepository(Comment)
     private readonly commentsRepository: Repository<Comment>,
   ) {}
- // likes.service.ts
-async toggleLike(userId: number, commentId: number): Promise<Comment> {
-  return this.commentsRepository.manager.transaction(async (manager) => {
-    // 1. التحقق من وجود التعليق والمستخدم
-    const comment = await manager.findOne(Comment, {
-      where: { id: commentId },
-      lock: { mode: 'pessimistic_write' }
+ async toggleLike(userId: number, commentId: number): Promise<{ comment: Comment; action: 'liked' | 'unliked' }> {
+    return this.likeRepository.manager.transaction(async (manager) => {
+      // التحقق من وجود التعليق والمستخدم
+      const comment = await manager.findOne(Comment, {
+        where: { id: commentId },
+        lock: { mode: 'pessimistic_write' }
+      });
+      
+      const user = await manager.findOne(User, { where: { id: userId } });
+
+      if (!comment) throw new NotFoundException('التعليق غير موجود');
+      if (!user) throw new NotFoundException('المستخدم غير موجود');
+
+      // البحث عن إعجاب موجود
+      const existingLike = await manager.findOne(Like, {
+        where: { userId, commentId }
+      });
+
+      // التبديل بين الإعجاب والإزالة
+      if (existingLike) {
+        await manager.delete(Like, existingLike.id);
+        comment.likesCount = Math.max(0, comment.likesCount - 1);
+        await manager.save(comment);
+        return { comment, action: 'unliked' };
+      } else {
+        const newLike = manager.create(Like, { userId, commentId });
+        await manager.save(newLike);
+        comment.likesCount += 1;
+        await manager.save(comment);
+        return { comment, action: 'liked' };
+      }
     });
-    
-    const user = await manager.findOne(User, { where: { id: userId } });
-
-    if (!comment) throw new NotFoundException('التعليق غير موجود');
-    if (!user) throw new NotFoundException('المستخدم غير موجود');
-
-    // 2. البحث عن إعجاب موجود
-    const existingLike = await manager.findOne(Like, {
-      where: { userId, commentId }
-    });
-
-    // 3. التبديل بين الإعجاب والإزالة
-    if (existingLike) {
-      await manager.delete(Like, existingLike.id);
-      comment.likesCount = Math.max(0, comment.likesCount - 1);
-    } else {
-      const newLike = manager.create(Like, { userId, commentId });
-      await manager.save(newLike);
-      comment.likesCount += 1;
-    }
-
-    // 4. حفظ التغييراتء
-    return manager.save(comment);
-  });
-}
+  }
 
   findAll() {
     return this.likeRepository.find({ relations: ['comment', 'user'] ,

@@ -7,16 +7,6 @@ import { User } from 'src/user/entities/user.entity';
 @Controller('likes')
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
- 
-  
-  @Post(':commentId/like')
-  async toggleLike(
-    @Param('commentId') commentId: number,
-    @Body() body: { userId: number },
-  ) {
-    return this.likesService.toggleLike(body.userId, commentId);
-  }
-
   @Get()
   findAll() {
     return this.likesService.findAll();
@@ -35,6 +25,16 @@ export class LikesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.likesService.remove(+id);
+  }
+
+  
+
+@Post(':commentId/like')
+  async toggleLike(
+    @Param('commentId') commentId: number,
+    @Body() body: { userId: number },
+  ) {
+    return this.likesService.toggleLike(body.userId, commentId);
   }
 }
 function CurrentUser(): (target: LikesController, propertyKey: "toggleLike", parameterIndex: 0) => void {

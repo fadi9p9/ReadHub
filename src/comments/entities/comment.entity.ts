@@ -37,8 +37,8 @@ export class Comment {
 @Column({ default: 0 }) 
   likesCount: number;
 
-  @OneToMany(() => Like, (like) => like.comment, {
-    onDelete: 'CASCADE'
-  })
-  likes: Like[];
+@OneToMany(() => Like, (like) => like.comment,{
+  onDelete: 'CASCADE'
+})
+likes: Like[];
 }

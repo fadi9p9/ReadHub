@@ -67,8 +67,8 @@ otpAttempts: number;
   @OneToMany(() => Comment, (comment) => comment.user,{onDelete: 'CASCADE'})
   comments: Comment[];
   
-  @OneToMany(() => Like, (like) => like.user, { onDelete: 'CASCADE' })
-  likes: Like[];
+  @OneToMany(() => Like, (like) => like.user)
+likes: Like[];
 
     @OneToMany(() => Favorite, favorite => favorite.user,{onDelete: 'CASCADE'})
 favorites: Favorite[];
