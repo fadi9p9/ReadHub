@@ -43,4 +43,8 @@ export class CreateBookDto {
   @IsArray()
   @IsNumber({}, { each: true })
   categoryIds: number[];
+
+  @IsNumber()
+  userId: number;
+  
 }

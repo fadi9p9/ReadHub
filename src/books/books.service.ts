@@ -8,6 +8,8 @@ import { PaginationDto } from './dto/pagination.dto';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Category } from '../categories/entities/category.entity';
+import { User } from 'src/user/entities/user.entity';
+import { UsersService } from 'src/user/user.service';
 @Injectable()
 export class BooksService {
   constructor(
@@ -15,6 +17,10 @@ export class BooksService {
     private readonly bookRepository: Repository<Book>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(User)
+    private readonly userService: UsersService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
    private parseCategoryIds(categoryIds: any): number[] {
     if (!categoryIds) return [];
@@ -401,4 +407,26 @@ async removeCategories(bookId: number, categoryIds: number[]): Promise<Book> {
 
   return this.bookRepository.save(book);
 }
+
+ async checkIfBooksAreFree(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user || !user.isSubscribed) return false;
+
+    if (user.subscriptionEndsAt && new Date() > user.subscriptionEndsAt) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async getSubscribedBooks(userId: number): Promise<any[]> {
+    const isFree = await this.checkIfBooksAreFree(userId);
+    const books = await this.bookRepository.find();
+
+    return books.map(book => ({
+      ...book,
+      finalPrice: isFree ? 0 : book.price,
+    }));
+  }
+
 }

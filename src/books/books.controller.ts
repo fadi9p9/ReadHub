@@ -13,18 +13,22 @@ import {
   ParseFloatPipe,
   BadRequestException,
   Put,
+  HttpStatus,HttpCode
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { BooksService } from './books.service';
-import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { PaginationDto } from './dto/pagination.dto';
+import { UsersService } from 'src/user/user.service';
+import { GetSubscribedBooksDto } from 'src/user/dto/create-user.dto';
+import { CreateBookDto } from './dto/create-book.dto';
 
 @Controller('books')
 export class BooksController {
-  constructor(private readonly booksService: BooksService) {}
+  constructor(private readonly booksService: BooksService,private readonly userService: UsersService 
+  ) {}
 
   @Post()
   @UseInterceptors(
@@ -160,5 +164,14 @@ async addRating(
   ) {
     return this.booksService.removeCategories(id, categoryIds);
   }
+  @Post('subscribed')
+  async getSubscribedBooks(@Body() body: { userId: number }) {
+    const { userId } = body;
 
+    if (typeof userId !== 'number' || isNaN(userId)) {
+      return { error: 'userId must be a valid number' };
+    }
+
+    return this.booksService.getSubscribedBooks(userId);
+  }
 }

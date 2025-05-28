@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { And, IsNull, LessThan, Like, Not, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -71,9 +71,45 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+async findAll(
+  page: number = 1,
+  limit: number = 10,
+  search: string = '',
+  subscribedOnly: boolean = false,
+): Promise<{ data: User[]; total: number; currentPage: number; totalPages: number }> {
+  const skip = (page - 1) * limit;
+
+  const queryBuilder = this.userRepository.createQueryBuilder('user');
+
+  if (subscribedOnly) {
+    queryBuilder.andWhere('user.isSubscribed = :subscribed', { subscribed: true });
   }
+
+  if (search) {
+    queryBuilder.andWhere(
+      '(user.first_name LIKE :search OR user.last_name LIKE :search OR user.email LIKE :search)',
+      { search: `%${search}%` },
+    );
+  }
+
+  // queryBuilder.leftJoinAndSelect('user.carts', 'carts')
+  //   .leftJoinAndSelect('user.comments', 'comments')
+  //   .leftJoinAndSelect('user.likes', 'likes')
+  //   .leftJoinAndSelect('user.favorites', 'favorites')
+  //   .leftJoinAndSelect('user.answers', 'answers')
+  //   .leftJoinAndSelect('user.quizResults', 'quizResults')
+  //   .leftJoinAndSelect('user.quizWinners', 'quizWinners')
+  //   .leftJoinAndSelect('user.replies', 'replies');
+
+  const [data, total] = await queryBuilder.skip(skip).take(limit).getManyAndCount();
+
+  return {
+    data,
+    total,
+    currentPage: page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOneBy({ id });
@@ -175,5 +211,54 @@ export class UsersService {
     return this.userRepository.find({
       where: { last_login_at: LessThan(date) },
     });
+  }
+
+
+
+  async checkIfBooksAreFree(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user || !user.isSubscribed) return false;
+    if (user.subscriptionEndsAt && new Date() > user.subscriptionEndsAt) return false;
+    return true;
+  }
+
+  async activateSubscription(userId: number, plan: 'monthly' | 'yearly') {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const duration = plan === 'monthly' ? 1 : 12;
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + duration);
+
+    user.isSubscribed = true;
+    user.subscriptionType = plan;
+    user.subscriptionEndsAt = endDate;
+
+    return this.userRepository.save(user);
+  }
+
+  async checkAndEndExpiredSubscriptions() {
+    const now = new Date();
+
+    const expiredUsers = await this.userRepository.find({
+      where: {
+        isSubscribed: true,
+        subscriptionEndsAt: And(Not(IsNull()), LessThan(now)),
+      },
+    });
+
+    if (expiredUsers.length === 0) {
+      console.log('لا توجد اشتراكات منتهية');
+      return;
+    }
+
+    for (const user of expiredUsers) {
+      user.isSubscribed = false;
+      user.subscriptionType = null;
+      user.subscriptionEndsAt = null;
+      await this.userRepository.save(user);
+    }
+
+    console.log(`تم إنهاء اشتراك ${expiredUsers.length} مستخدم`);
   }
 }

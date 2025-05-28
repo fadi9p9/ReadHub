@@ -7,6 +7,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { CronService } from 'src/cron/cron.service';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import * as crypto from 'crypto';
     }),
   ],
   controllers: [UserController],
-  providers: [UsersService],
+  providers: [UsersService,CronService],
   exports: [UsersService, TypeOrmModule],
 })
 export class UserModule {}

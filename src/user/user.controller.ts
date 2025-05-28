@@ -11,6 +11,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './user.service';
@@ -22,10 +23,15 @@ import { Express } from 'express';
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
+ @Get()
+async getUsers(
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,
+  @Query('search') search: string = '',
+  @Query('subscribed') subscribed: boolean = false,
+) {
+  return this.userService.findAll(page, limit, search, subscribed);
+}
 
     @Post()
   @UseInterceptors(FileInterceptor('img'))
@@ -71,4 +77,12 @@ export class UserController {
 async remove(@Body() body: { ids: number[] }) {
   return this.userService.remove(body.ids);
 }
+
+@Post('activate-subscription')
+  async activateSubscription(
+    @Query('userId') userId: number,
+    @Query('plan') plan: 'monthly' | 'yearly',
+  ) {
+    return this.userService.activateSubscription(userId, plan);
+  }
 }

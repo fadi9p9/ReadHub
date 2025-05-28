@@ -89,4 +89,7 @@ likeCount: number;
     onDelete: 'CASCADE',
   })
   quizzes: Quiz[];
+
+  @Column({ default: false })
+  isFree: boolean;
 }

@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsEmail, IsString, IsOptional, IsEnum, IsNumber } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -26,4 +26,8 @@ export class CreateUserDto {
   img?: string;
 
   isVerified?: boolean;
+}
+export class GetSubscribedBooksDto {
+  @IsNumber()
+  userId: number;
 }

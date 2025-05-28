@@ -40,6 +40,7 @@ import { MailModule } from './auth/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ReminderService } from './reminder/reminder.service';
 import { MailService } from './auth/mail/mail.service';
+import { PaymentModule } from './payments/payments.module';
 
 
 @Module({
@@ -93,7 +94,8 @@ import { MailService } from './auth/mail/mail.service';
     CouponModule,
     QuestionAnswerModule,
     RepliesModule,
-    UserModule
+    UserModule,
+    PaymentModule
     
     
   ],

@@ -89,4 +89,17 @@ quizWinners: QuizWinner[];
 @OneToMany(() => Reply, replay => replay.user,{onDelete: 'CASCADE'})
 replies: Reply[];
 
+
+ @Column('boolean', { default: false })
+isSubscribed: boolean;
+
+@Column('varchar', { nullable: true })
+subscriptionType: 'monthly' | 'yearly' | null;
+
+@Column('datetime', { nullable: true })
+subscriptionEndsAt: Date | null;
+
+
+
+
 }
