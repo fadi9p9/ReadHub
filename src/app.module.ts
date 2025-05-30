@@ -41,6 +41,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ReminderService } from './reminder/reminder.service';
 import { MailService } from './auth/mail/mail.service';
 import { PaymentModule } from './payments/payments.module';
+import { FaqModule } from './faq/faq.module';
 
 
 @Module({
@@ -95,7 +96,8 @@ import { PaymentModule } from './payments/payments.module';
     QuestionAnswerModule,
     RepliesModule,
     UserModule,
-    PaymentModule
+    PaymentModule,
+    FaqModule
     
     
   ],
