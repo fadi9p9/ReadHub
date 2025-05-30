@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { Cart } from './entities/cart.entity';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -19,21 +19,26 @@ export class CartsService {
     return this.cartRepository.save(cart);
   }
 
-  async findAll() {
-  return this.cartRepository.find({
+  async findAll(filterStatus?: string) {
+  const options: FindManyOptions<Cart> = {
     relations: ['user'],
     select: {
       id: true,
       created_at: true,
-      updated_at:true,
+      updated_at: true,
       status: true,
       user: {
         id: true,
         email: true,
       },
-      
-    }
-  });
+    },
+  };
+
+  if (filterStatus) {
+    options.where = { status: filterStatus };
+  }
+
+  return this.cartRepository.find(options);
 }
 
  async findOne(id: number) {

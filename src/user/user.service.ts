@@ -75,6 +75,7 @@ async findAll(
   page: number = 1,
   limit: number = 10,
   search: string = '',
+  role?: string,
   subscribedOnly: boolean = false,
 ): Promise<{ data: User[]; total: number; currentPage: number; totalPages: number }> {
   const skip = (page - 1) * limit;
@@ -90,6 +91,10 @@ async findAll(
       '(user.first_name LIKE :search OR user.last_name LIKE :search OR user.email LIKE :search)',
       { search: `%${search}%` },
     );
+  }
+
+   if (role) {
+    queryBuilder.andWhere('user.role = :role', { role });
   }
 
   // queryBuilder.leftJoinAndSelect('user.carts', 'carts')

@@ -29,8 +29,9 @@ async getUsers(
   @Query('limit') limit: number = 10,
   @Query('search') search: string = '',
   @Query('subscribed') subscribed: boolean = false,
+    @Query('role') role?: 'admin' | 'author' | 'user',
 ) {
-  return this.userService.findAll(page, limit, search, subscribed);
+  return this.userService.findAll(page, limit, search, role,subscribed);
 }
 
     @Post()

@@ -66,18 +66,18 @@ async findOne(id: number, lang: string = 'en') {
     const affectedRows = deleteResult.affected || 0;
     
     if (affectedRows === 0) {
-      throw new NotFoundException(`No coupons found with the provided IDs`);
+      throw new NotFoundException(`No faqs found with the provided IDs`);
     }
     
     if (affectedRows < idsArray.length) {
       return { 
-        message: `Only ${affectedRows} coupons deleted successfully`, 
-        warning: 'Some coupons were not found' 
+        message: `Only ${affectedRows} faqs deleted successfully`, 
+        warning: 'Some faqs were not found' 
       };
     }
     
     return { 
-      message: `${affectedRows} coupons deleted successfully` 
+      message: `${affectedRows} faqs deleted successfully` 
     };
   }
 }

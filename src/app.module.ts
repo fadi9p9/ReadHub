@@ -42,6 +42,7 @@ import { ReminderService } from './reminder/reminder.service';
 import { MailService } from './auth/mail/mail.service';
 import { PaymentModule } from './payments/payments.module';
 import { FaqModule } from './faq/faq.module';
+import { StaticPageModule } from './static-page/static-page.module';
 
 
 @Module({
@@ -97,7 +98,8 @@ import { FaqModule } from './faq/faq.module';
     RepliesModule,
     UserModule,
     PaymentModule,
-    FaqModule
+    FaqModule,
+    StaticPageModule
     
     
   ],

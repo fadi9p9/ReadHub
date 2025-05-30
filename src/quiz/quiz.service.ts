@@ -41,7 +41,18 @@ export class QuizzesService {
     const query = this.quizRepository
       .createQueryBuilder('quiz')
       .leftJoinAndSelect('quiz.book', 'book')
-      .leftJoinAndSelect('quiz.questions', 'questions')
+      .leftJoinAndSelect('quiz.questions', 'question')
+      .select([
+        'quiz.id',
+        'quiz.title',
+        'quiz.ar_title',
+        'quiz.created_at',
+        'quiz.updated_at',
+        'book.id',
+        'book.title',
+        'book.ar_title',
+
+      ])
       .take(limit)
       .skip(skip);
 
@@ -87,6 +98,10 @@ export class QuizzesService {
           id:true,
           title:true,
           ar_title:true,
+        },
+        questions:{
+          id:true,
+          question_text:true
         }
       }
     });
