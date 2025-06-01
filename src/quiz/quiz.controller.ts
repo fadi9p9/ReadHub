@@ -17,7 +17,10 @@ export class QuizzesController {
   findAll(@Query() paginationDto: PaginationQuizDto) {
     return this.quizzesService.findAll(paginationDto);
   }
-
+@Get('all-formatted')
+  async getAllFormatted() {
+    return this.quizzesService.getAllFormatted();
+  }
   @Get(':id')
   findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     return this.quizzesService.findOne(+id, lang);

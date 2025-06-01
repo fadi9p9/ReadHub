@@ -27,6 +27,8 @@ export class BookQuestionTranslation {
   updated_at: Date;
 
 
+    @UpdateDateColumn()
+    ceated_at: Date;
   @ManyToOne(() => BookQuestion, (question) => question.translations,{
     onDelete:'CASCADE'
   })

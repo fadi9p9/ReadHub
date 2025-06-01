@@ -56,6 +56,8 @@ discounted_price: number | null;
   @UpdateDateColumn()
   updated_at: Date;
 
+    @UpdateDateColumn()
+    ceated_at: Date;
 
   @ManyToMany(() => Category,{
   })

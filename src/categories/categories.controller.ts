@@ -7,17 +7,21 @@ import { PaginationCategoryDto } from './dto/pagination-category.dto';
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
-
+  
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
-
+  
   @Get()
   findAll(@Query() paginationDto: PaginationCategoryDto) {
     return this.categoriesService.findAll(paginationDto);
   }
-
+  
+  @Get('all-formatted')
+  async getAllFormatted() {
+    return this.categoriesService.getAllFormatted();
+  }
   @Get(':id')
   findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     return this.categoriesService.findOne(+id, lang);

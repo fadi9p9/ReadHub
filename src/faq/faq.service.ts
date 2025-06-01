@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Faq } from './entities/faq.entity';
@@ -37,18 +37,58 @@ export class FaqService {
   }));
 }
 
-async findOne(id: number, lang: string = 'en') {
+
+
+
+
+async findOne(id: number, lang?: string) {
   const faq = await this.faqRepository.findOneBy({ id });
 
-  if (!faq) throw new Error('FAQ not found');
+  if (!faq) {
+    throw new NotFoundException(`FAQ with ID ${id} not found`);
+  }
 
-  return {
-    id: faq.id,
-    question: lang === 'ar' ? faq.arQuestion : faq.enQuestion,
-    answer: lang === 'ar' ? faq.arAnswer : faq.enAnswer,
-    status: faq.isPublished,
-  };
+  // عند عدم وجود lang يرجع اللغتين
+  if (!lang) {
+    return {
+      id: faq.id,
+      question: {
+        en: faq.enQuestion,
+        ar: faq.arQuestion,
+      },
+      answer: {
+        en: faq.enAnswer,
+        ar: faq.arAnswer,
+      },
+      status: faq.isPublished ? 'active' : 'inactive',
+    };
+  }
+
+  // إنجليزي
+  if (lang === 'en') {
+    return {
+      id: faq.id,
+      question: faq.enQuestion,
+      answer: faq.enAnswer,
+      status: faq.isPublished ? 'active' : 'inactive',
+    };
+  }
+
+  // عربي
+  if (lang === 'ar') {
+    return {
+      id: faq.id,
+      question: faq.arQuestion,
+      answer: faq.arAnswer,
+      status: faq.isPublished ? 'active' : 'inactive',
+    };
+  }
+
+  // لغة غير مدعومة
+  throw new BadRequestException(`Unsupported language: ${lang}`);
 }
+
+
   async update(id: number, updateFaqDto: UpdateFaqDto): Promise<Faq> {
     const faq = await this.faqRepository.findOneBy({ id });
     if (!faq) throw new Error('FAQ not found');

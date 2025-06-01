@@ -17,6 +17,9 @@ export class Cart {
     @UpdateDateColumn()
   updated_at: Date;
 
+    @UpdateDateColumn()
+    ceated_at: Date;
+    
   @OneToMany(() => CartItem, (cartItem) => cartItem.cart)
   items: CartItem[];
 }

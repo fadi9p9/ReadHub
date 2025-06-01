@@ -68,6 +68,11 @@ export class BooksController {
     return this.booksService.findAll(paginationDto);
   }
 
+  @Get('all-formatted')
+  async getAllFormatted() {
+    return this.booksService.getAllFormatted();
+  }
+
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,

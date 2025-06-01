@@ -99,5 +99,16 @@ export class CategoriesService {
     message: `${affectedRows} categories deleted successfully` 
   };
 }
+async getAllFormatted() {
+  const categories = await this.categoryRepository.find();
+
+  return categories.map(category => ({
+    id: category.id,
+    title: {
+      en: category.title,
+      ar: category.ar_title,
+    },
+  }));
+}
 
 }

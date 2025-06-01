@@ -9,6 +9,8 @@ export class QuestionAnswer {
         @UpdateDateColumn()
   updated_at: Date;
 
+    @UpdateDateColumn()
+    ceated_at: Date;
 
     @Column({ name: 'is_correct' }) 
     isCorrect: boolean

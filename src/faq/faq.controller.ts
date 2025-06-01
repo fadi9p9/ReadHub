@@ -21,9 +21,10 @@ async findAll(
 }
 
   @Get(':id')
-  async findOne(@Param('id') id: number, @Query('lang') lang: string = 'en') {
-    return this.faqService.findOne(id, lang);
-  }
+findOne(@Param('id') id: string, @Query('lang') lang?: string) {
+  return this.faqService.findOne(+id, lang);
+}
+
 
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateFaqDto: UpdateFaqDto) {

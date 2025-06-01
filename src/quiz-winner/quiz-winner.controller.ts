@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { QuizWinnersService } from './quiz-winner.service';
 import { CreateQuizWinnerDto } from './dto/create-quiz-winner.dto';
 import { UpdateQuizWinnerDto } from './dto/update-quiz-winner.dto';
@@ -13,9 +13,14 @@ export class QuizWinnersController {
   }
 
   @Get()
-  findAll() {
-    return this.quizWinnersService.findAll();
-  }
+findAllPaginated(
+  @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+  @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  @Query('search') search?: string
+) {
+  return this.quizWinnersService.findAllWithPaginationAndSearch(page, limit, search);
+}
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

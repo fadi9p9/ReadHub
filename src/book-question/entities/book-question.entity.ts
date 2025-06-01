@@ -36,7 +36,10 @@ export class BookQuestion {
   correct_option: string;
 
     @UpdateDateColumn()
-  updated_at: Date;
+    updated_at: Date;
+
+    @UpdateDateColumn()
+    ceated_at: Date;
 
 
   @OneToMany(() => QuestionAnswer, (answer) => answer.question)

@@ -186,4 +186,16 @@ export class QuizzesService {
   };
 }
 
+async getAllFormatted() {
+  const quiz = await this.quizRepository.find();
+
+  return quiz.map(quiz => ({
+    id: quiz.id,
+    title: {
+      en: quiz.title,
+      ar: quiz.ar_title,
+    },
+  }));
+}
+
 }

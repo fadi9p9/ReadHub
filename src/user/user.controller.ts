@@ -51,6 +51,11 @@ async getUsers(
     return this.userService.create(createUserDto, img);
   }
 
+  @Get('all-formatted')
+  async getAllFormatted() {
+    return this.userService.getAllFormatted();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);

@@ -266,4 +266,17 @@ async findAll(
 
     console.log(`تم إنهاء اشتراك ${expiredUsers.length} مستخدم`);
   }
+
+  async getAllFormatted() {
+  const user = await this.userRepository.find();
+
+  return user.map(user => ({
+    id: user.id,
+    Name: {
+      firstName: user.first_name,
+      lastName: user.last_name,
+    },
+    Email: user.email,
+  }));
+}
 }

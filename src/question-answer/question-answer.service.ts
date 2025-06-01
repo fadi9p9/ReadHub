@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
- import { Repository } from 'typeorm';
+ import { Brackets, Repository } from 'typeorm';
 import { QuestionAnswer } from './entities/question-answer.entity';
 import { CreateQuestionAnswerDto } from './dto/create-question-answer.dto';
 import { UpdateQuestionAnswerDto } from './dto/update-question-answer.dto';
@@ -40,29 +40,62 @@ export class QuestionAnswersService {
 }
 
 
-  findAll() {
-    return this.questionAnswerRepository.find({ 
-      relations: ['question', 'user'] ,
-      select: {
-        id: true,
-        isCorrect: true,
-        question: {
-          id: true,
-          question_text: true,
-          book: {
-            id: true,
-            title: true,
-           
-          },
-        },
-        user: {
-          id: true,
-          first_name: true,
-          last_name: true,
-        },
-      }
-    });
+  async findAllWithPaginationAndSearch(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+) {
+  const skip = (page - 1) * limit;
+
+  const query = this.questionAnswerRepository
+    .createQueryBuilder('answer')
+    .leftJoinAndSelect('answer.question', 'question')
+    .leftJoinAndSelect('question.book', 'book')
+    .leftJoinAndSelect('answer.user', 'user')
+    .select([
+      'answer.id',
+      'answer.isCorrect',
+      'question.id',
+      'question.question_text',
+      'book.id',
+      'book.title',
+      'user.id',
+      'user.first_name',
+      'user.last_name',
+    ])
+    .take(limit)
+    .skip(skip);
+
+  if (search) {
+    const lowerSearch = `%${search.toLowerCase()}%`;
+
+    query.andWhere(
+      new Brackets(qb => {
+        qb.where('LOWER(question.question_text) LIKE :search', { search: lowerSearch })
+          .orWhere('LOWER(user.first_name) LIKE :search', { search: lowerSearch })
+          .orWhere('LOWER(user.last_name) LIKE :search', { search: lowerSearch })
+          .orWhere('LOWER(book.title) LIKE :search', { search: lowerSearch });
+      })
+    );
   }
+
+  const [answers, total] = await query.getManyAndCount();
+
+  return {
+    data: answers,
+    meta: {
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+      has_previous_page: page > 1,
+      has_next_page: page < Math.ceil(total / limit),
+      previous_page: page > 1 ? page - 1 : null,
+      next_page: page < Math.ceil(total / limit) ? page + 1 : null,
+    },
+  };
+}
+
 
   findOne(id: number) {
     return this.questionAnswerRepository.findOne({ 

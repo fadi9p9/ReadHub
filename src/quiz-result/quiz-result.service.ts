@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { QuizResult } from './entities/quiz-result.entity';
 import { CreateQuizResultDto } from './dto/create-quiz-result.dto';
 import { UpdateQuizResultDto } from './dto/update-quiz-result.dto';
@@ -43,9 +43,57 @@ export class QuizResultsService {
     return this.quizResultRepository.save(result);
   }
 
-  findAll() {
-    return this.quizResultRepository.find({ relations: ['quiz', 'user'] });
+  async findAllWithPaginationAndSearch(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+) {
+  const skip = (page - 1) * limit;
+
+  const query = this.quizResultRepository
+    .createQueryBuilder('result')
+    .leftJoinAndSelect('result.quiz', 'quiz')
+    .leftJoinAndSelect('result.user', 'user')
+    .select([
+      'result',
+      'user.id',
+      'user.first_name',
+      'user.last_name',
+      'quiz.id',
+      'quiz.title',
+      'quiz.created_at',
+    ])
+    .take(limit)
+    .skip(skip);
+
+  if (search) {
+    const lowerSearch = `%${search.toLowerCase()}%`;
+    query.andWhere(
+      new Brackets(qb => {
+        qb.where('LOWER(user.first_name) LIKE :search', { search: lowerSearch })
+          .orWhere('LOWER(user.last_name) LIKE :search', { search: lowerSearch })
+          .orWhere('LOWER(quiz.title) LIKE :search', { search: lowerSearch });
+      })
+    );
   }
+
+  const [results, total] = await query.getManyAndCount();
+
+  return {
+    data: results,
+    meta: {
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+      has_previous_page: page > 1,
+      has_next_page: page < Math.ceil(total / limit),
+      previous_page: page > 1 ? page - 1 : null,
+      next_page: page < Math.ceil(total / limit) ? page + 1 : null,
+    },
+  };
+}
+
 
   findOne(id: number) {
     return this.quizResultRepository.findOne({ where: { id }, relations: ['quiz', 'user'] });

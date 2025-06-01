@@ -429,4 +429,16 @@ async removeCategories(bookId: number, categoryIds: number[]): Promise<Book> {
     }));
   }
 
+  async getAllFormatted() {
+  const book = await this.bookRepository.find();
+
+  return book.map(book => ({
+    id: book.id,
+    title: {
+      en: book.title,
+      ar: book.ar_title,
+    },
+  }));
+}
+
 }

@@ -17,6 +17,8 @@ export class Quiz {
     @UpdateDateColumn()
   updated_at: Date;
 
+    @UpdateDateColumn()
+    ceated_at: Date;
   @ManyToOne(() => Book, (book) => book.quizzes, { onDelete: 'CASCADE' })
   book: Book;
 

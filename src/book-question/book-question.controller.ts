@@ -16,9 +16,10 @@ export class BookQuestionsController {
   async findAllPaginated(
     @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
-    @Query('lang') lang?: string
+    @Query('lang') lang?: string,
+    @Query('search') search?: string
   ) {
-    return this.questionsService.findAllWithPagination(page, limit, lang);
+    return this.questionsService.findAllWithPagination(page, limit, lang,search);
   }
 
   @Get(':id')

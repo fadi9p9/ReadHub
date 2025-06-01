@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { QuestionAnswersService } from './question-answer.service';
 import { CreateQuestionAnswerDto } from './dto/create-question-answer.dto';
 import { UpdateQuestionAnswerDto } from './dto/update-question-answer.dto';
@@ -12,10 +12,15 @@ export class QuestionAnswersController {
     return this.questionAnswersService.create(createQuestionAnswerDto);
   }
 
-  @Get()
-  findAll() {
-    return this.questionAnswersService.findAll();
-  }
+ @Get()
+findAllPaginated(
+  @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+  @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  @Query('search') search?: string
+) {
+  return this.questionAnswersService.findAllWithPaginationAndSearch(page, limit, search);
+}
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

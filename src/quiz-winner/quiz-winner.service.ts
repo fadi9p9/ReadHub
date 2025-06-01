@@ -27,32 +27,58 @@ export class QuizWinnersService {
     return this.quizWinnerRepository.save(winner);
   }
 
-  findAll() {
-    return this.quizWinnerRepository.find({ relations: ['quiz', 'user', 'coupon'] ,
-      select:{
-         id: true,
-        created_at:true,
-        user: {
-          id: true,
-          first_name: true,
-          last_name:true,
-          
-        },
-        quiz: {
-          id: true,
-          title: true,
-          created_at: true,
-        },
-        coupon: {
-          id: true,
-          code: true,
-          discount_value: true,
-          
-        },
-      }
-    });
+  async findAllWithPaginationAndSearch(
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+) {
+  const skip = (page - 1) * limit;
+
+  const query = this.quizWinnerRepository
+    .createQueryBuilder('winner')
+    .leftJoinAndSelect('winner.quiz', 'quiz')
+    .leftJoinAndSelect('winner.user', 'user')
+    .leftJoinAndSelect('winner.coupon', 'coupon')
+    .select([
+      'winner.id',
+      'winner.created_at',
+      'user.id',
+      'user.first_name',
+      'user.last_name',
+      'quiz.id',
+      'quiz.title',
+      'quiz.created_at',
+      'coupon.id',
+      'coupon.code',
+      'coupon.discount_value',
+    ])
+    .take(limit)
+    .skip(skip);
+
+  if (search) {
+    const lowerSearch = `%${search.toLowerCase()}%`;
+    query.andWhere(
+      `(LOWER(user.first_name) LIKE :search OR LOWER(user.last_name) LIKE :search OR LOWER(quiz.title) LIKE :search)`,
+      { search: lowerSearch }
+    );
   }
 
+  const [results, total] = await query.getManyAndCount();
+
+  return {
+    data: results,
+    meta: {
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+      has_previous_page: page > 1,
+      has_next_page: page < Math.ceil(total / limit),
+      previous_page: page > 1 ? page - 1 : null,
+      next_page: page < Math.ceil(total / limit) ? page + 1 : null,
+    },
+  };
+}
   findOne(id: number) {
     return this.quizWinnerRepository.findOne({ where: { id }, relations: ['quiz', 'user', 'coupon'] ,
       select: {

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn } from 'typeorm';
 
 @Entity('frequently_asked_questions')
 export class Faq {
@@ -23,4 +23,11 @@ export class Faq {
     default: 'active',
   })
   isPublished: 'active' | 'inactive';
+
+  
+      @UpdateDateColumn()
+      ceated_at: Date;
+
+      @UpdateDateColumn()
+      updated_at: Date;
 }

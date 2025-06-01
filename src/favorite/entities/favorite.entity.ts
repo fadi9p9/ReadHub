@@ -12,6 +12,8 @@ export class Favorite {
   updated_at: Date;
 
 
+    @UpdateDateColumn()
+    ceated_at: Date;
   @ManyToOne(() => User, (user) => user.favorites,{onDelete: 'CASCADE'})
   user: User;
 
