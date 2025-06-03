@@ -8,10 +8,13 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { CronService } from 'src/cron/cron.service';
+import { AuthorProfileModule } from 'src/author-profile/author-profile.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    AuthorProfileModule,
+    
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads/users',

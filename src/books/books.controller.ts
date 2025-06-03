@@ -179,4 +179,9 @@ async addRating(
 
     return this.booksService.getSubscribedBooks(userId);
   }
+  @Get('by-author/:authorId')
+async getBooksByAuthor(@Param('authorId', ParseIntPipe) authorId: number) {
+  return this.booksService.findBooksByAuthorId(authorId);
+}
+
 }

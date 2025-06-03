@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { BookQuestion } from '../../book-question/entities/book-question.entity';
 import { CartItem } from '../../cart_item/entities/cart_item.entity';
 import { Favorite } from '../../favorite/entities/favorite.entity';
 import { Quiz } from '../../quiz/entities/quiz.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Book {
@@ -94,4 +95,10 @@ likeCount: number;
 
   @Column({ default: false })
   isFree: boolean;
+
+  @ManyToOne(() => User, (user) => user.books, { eager: false, onDelete: 'CASCADE' })
+user: User;
+
+@Column()
+userId: number;
 }

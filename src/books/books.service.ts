@@ -53,7 +53,7 @@ export class BooksService {
   book.total_pages = createBookDto.total_pages || 0;
   book.rating_count = createBookDto.rating_count || 0;
   book.rating = createBookDto.rating || 0;
-
+  book.userId = createBookDto.userId;
   if (image) book.img = `/uploads/images/${image.filename}`;
   if (file) book.pdf = `/uploads/pdfs/${file.filename}`;
 
@@ -142,9 +142,9 @@ async findAll(paginationDto: PaginationDto) {
     } else if (highestRated) {
         query.orderBy('book.rating', 'DESC');
     }
-
+      if(limit!=-1){
     query.take(limit).skip(skip);
-
+      }
     const [books, total] = await query.getManyAndCount();
 
     const processedBooks = books.map((book) => {
@@ -440,5 +440,15 @@ async removeCategories(bookId: number, categoryIds: number[]): Promise<Book> {
     },
   }));
 }
+
+async findBooksByAuthorId(authorId: number): Promise<Book[]> {
+  return this.bookRepository.find({
+    where: { userId: authorId },
+    relations: ['categories'], 
+    order: { created_at: 'DESC' },
+  });
+}
+  
+
 
 }

@@ -48,7 +48,6 @@ async findOne(id: number, lang?: string) {
     throw new NotFoundException(`FAQ with ID ${id} not found`);
   }
 
-  // عند عدم وجود lang يرجع اللغتين
   if (!lang) {
     return {
       id: faq.id,
@@ -64,7 +63,6 @@ async findOne(id: number, lang?: string) {
     };
   }
 
-  // إنجليزي
   if (lang === 'en') {
     return {
       id: faq.id,
@@ -74,7 +72,6 @@ async findOne(id: number, lang?: string) {
     };
   }
 
-  // عربي
   if (lang === 'ar') {
     return {
       id: faq.id,
@@ -84,7 +81,6 @@ async findOne(id: number, lang?: string) {
     };
   }
 
-  // لغة غير مدعومة
   throw new BadRequestException(`Unsupported language: ${lang}`);
 }
 

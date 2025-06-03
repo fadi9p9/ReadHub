@@ -43,6 +43,7 @@ import { MailService } from './auth/mail/mail.service';
 import { PaymentModule } from './payments/payments.module';
 import { FaqModule } from './faq/faq.module';
 import { StaticPageModule } from './static-page/static-page.module';
+import { AuthorProfileModule } from './author-profile/author-profile.module';
 
 
 @Module({
@@ -99,7 +100,8 @@ import { StaticPageModule } from './static-page/static-page.module';
     UserModule,
     PaymentModule,
     FaqModule,
-    StaticPageModule
+    StaticPageModule,
+    AuthorProfileModule
     
     
   ],

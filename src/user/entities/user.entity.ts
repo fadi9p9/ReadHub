@@ -7,6 +7,7 @@ import { QuizWinner } from '../../quiz-winner/entities/quiz-winner.entity';
 import { QuizResult } from '../../quiz-result/entities/quiz-result.entity';
 import { Reply } from '../../replaies/entities/replay.entity';
 import { Like } from 'src/likes/entities/like.entity';
+import { Book } from 'src/books/entities/book.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -98,6 +99,9 @@ subscriptionType: 'monthly' | 'yearly' | null;
 
 @Column('datetime', { nullable: true })
 subscriptionEndsAt: Date | null;
+  
+@OneToMany(() => Book, (book) => book.user)
+books: Book[];
 
 
 
