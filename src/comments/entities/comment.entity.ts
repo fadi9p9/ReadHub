@@ -17,6 +17,9 @@ export class Comment {
   })
   book: Book;
 
+  @Column({ default: 0 }) 
+  repliesCount: number;
+
   @Column({ type: 'varchar', length: 100 })
   title: string;
 

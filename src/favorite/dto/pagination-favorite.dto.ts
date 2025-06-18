@@ -1,4 +1,4 @@
-import { IsOptional, IsInt } from 'class-validator';
+import { IsOptional, IsInt, IsString } from 'class-validator';
 
 export class PaginationFavoriteDto {
   @IsOptional()
@@ -16,4 +16,8 @@ export class PaginationFavoriteDto {
   @IsOptional()
   @IsInt()
   bookId?: number;
+
+    @IsOptional()
+  @IsString()
+  sort?: 'newest' | 'oldest' = 'newest';
 }

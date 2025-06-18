@@ -53,7 +53,9 @@ export class BooksService {
   book.total_pages = createBookDto.total_pages || 0;
   book.rating_count = createBookDto.rating_count || 0;
   book.rating = createBookDto.rating || 0;
-  book.userId = createBookDto.userId;
+  book.userId = createBookDto.userId || null;
+  book.isFree = createBookDto.isFree || false;
+  
   if (image) book.img = `/uploads/images/${image.filename}`;
   if (file) book.pdf = `/uploads/pdfs/${file.filename}`;
 

@@ -57,9 +57,6 @@ discounted_price: number | null;
   @UpdateDateColumn()
   updated_at: Date;
 
-    @UpdateDateColumn()
-    ceated_at: Date;
-
   @ManyToMany(() => Category,{
   })
   @JoinTable({ name: 'book_categories' })
@@ -96,9 +93,15 @@ likeCount: number;
   @Column({ default: false })
   isFree: boolean;
 
-  @ManyToOne(() => User, (user) => user.books, { eager: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.books, { 
+  eager: false, 
+  onDelete: 'CASCADE',
+  nullable: true 
+})
 user: User;
 
-@Column()
-userId: number;
+  @Column({ nullable: true })
+userId: number | null;
+
+
 }

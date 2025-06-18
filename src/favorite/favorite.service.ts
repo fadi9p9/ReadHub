@@ -144,4 +144,43 @@ async create(createFavoriteDto: CreateFavoriteDto): Promise<{ message: string, a
   };
 }
 
+  async findByUserId(
+  userId: number, 
+  paginationDto: PaginationFavoriteDto
+): Promise<{data: Favorite[], count: number}> {
+  const { limit = 10, page = 1 } = paginationDto;
+  const skip = (page - 1) * limit;
+
+  const query = this.favoriteRepository
+    .createQueryBuilder('favorite')
+    .leftJoinAndSelect('favorite.book', 'book')
+    .leftJoinAndSelect('book.categories', 'categories') // إذا كنت تريد تصنيفات الكتاب
+    .where('favorite.user.id = :userId', { userId })
+    .select([
+      'favorite.id',
+      'favorite.created_at',
+      'book.id',
+      'book.title',
+      'book.ar_title',
+      'book.author',
+      'book.img',
+      'book.price',
+      'book.discount',
+      'book.discounted_price',
+      'book.rating',
+      'book.total_pages',
+      'categories.id',
+      'categories.title'
+    ])
+    .orderBy('favorite.created_at', 'DESC') 
+    .take(limit)
+    .skip(skip);
+
+  const [data, count] = await query.getManyAndCount();
+
+  return {
+    data,
+    count
+  };
+}
 }

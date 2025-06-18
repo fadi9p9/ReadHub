@@ -11,6 +11,11 @@ export class PaginationCommentDto {
 
   @IsOptional()
   @IsString()
+  email?: string;
+  
+
+  @IsOptional()
+  @IsString()
   search?: string;
 
   @IsOptional()

@@ -1,6 +1,19 @@
-import { IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsBoolean,
+  IsDecimal,
+} from 'class-validator';
 
 export class CreateBookDto {
+  @IsOptional()
+  imgFile?: Express.Multer.File;
+
+  @IsOptional()
+  pdfFile?: Express.Multer.File;
+  
   @IsString()
   title: string;
 
@@ -16,6 +29,14 @@ export class CreateBookDto {
   @IsString()
   ar_description?: string;
 
+  @IsOptional()
+  @IsString()
+  img?: string;
+
+  @IsOptional()
+  @IsString()
+  pdf?: string;
+
   @IsString()
   author: string;
 
@@ -28,23 +49,30 @@ export class CreateBookDto {
 
   @IsOptional()
   @IsNumber()
-  total_pages?: number = 0;
+  rating?: number = 0;
 
   @IsOptional()
   @IsNumber()
   rating_count?: number = 0;
 
- 
+  @IsOptional()
+  @IsNumber()
+  total_pages?: number = 0;
 
   @IsOptional()
   @IsNumber()
-  rating?: number = 0;
+  discounted_price?: number;
 
+  @IsOptional()
+  @IsBoolean()
+  isFree?: boolean = false;
+
+  @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
-  categoryIds: number[];
+  categoryIds?: number[];
 
+  @IsOptional()
   @IsNumber()
-  userId: number;
-  
+  userId?: number | null;
 }

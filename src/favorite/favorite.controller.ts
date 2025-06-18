@@ -29,4 +29,13 @@ export class FavoriteController {
 async remove(@Body() body: { ids: number[] }) {
   return this.favoriteService.remove(body.ids);
 }
+
+  @Get('user/:userId')
+async findByUserId(
+  @Param('userId') userId: string,
+  @Query() paginationDto: PaginationFavoriteDto
+) {
+  return this.favoriteService.findByUserId(+userId, paginationDto);
+}
+
 }
