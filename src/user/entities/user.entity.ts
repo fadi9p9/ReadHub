@@ -8,6 +8,9 @@ import { QuizResult } from '../../quiz-result/entities/quiz-result.entity';
 import { Reply } from '../../replaies/entities/replay.entity';
 import { Like } from 'src/likes/entities/like.entity';
 import { Book } from 'src/books/entities/book.entity';
+import { PendingBook } from 'src/pending-book/entities/pending-book.entity';
+import { Notification } from 'src/notification/entities/notification.entity';
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -103,7 +106,16 @@ subscriptionEndsAt: Date | null;
 @OneToMany(() => Book, (book) => book.user)
 books: Book[];
 
+@OneToMany(() => PendingBook, (pendingBook) => pendingBook.author)
+pendingBooks: PendingBook[];
+
+@OneToMany(() => Notification, (notification) => notification.user)
+notification: Notification[];
 
 
-
+}
+export enum UserRole {
+  ADMIN = 'admin',
+  AUTHOR = 'author',
+  READER = 'reader',
 }

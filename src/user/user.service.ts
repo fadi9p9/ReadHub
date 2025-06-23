@@ -97,14 +97,7 @@ async findAll(
     queryBuilder.andWhere('user.role = :role', { role });
   }
 
-  // queryBuilder.leftJoinAndSelect('user.carts', 'carts')
-  //   .leftJoinAndSelect('user.comments', 'comments')
-  //   .leftJoinAndSelect('user.likes', 'likes')
-  //   .leftJoinAndSelect('user.favorites', 'favorites')
-  //   .leftJoinAndSelect('user.answers', 'answers')
-  //   .leftJoinAndSelect('user.quizResults', 'quizResults')
-  //   .leftJoinAndSelect('user.quizWinners', 'quizWinners')
-  //   .leftJoinAndSelect('user.replies', 'replies');
+
 
   const [data, total] = await queryBuilder.skip(skip).take(limit).getManyAndCount();
 

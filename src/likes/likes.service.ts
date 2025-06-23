@@ -19,7 +19,6 @@ export class LikesService {
   ) {}
  async toggleLike(userId: number, commentId: number): Promise<{ comment: Comment; action: 'liked' | 'unliked' }> {
     return this.likeRepository.manager.transaction(async (manager) => {
-      // التحقق من وجود التعليق والمستخدم
       const comment = await manager.findOne(Comment, {
         where: { id: commentId },
         lock: { mode: 'pessimistic_write' }
@@ -30,12 +29,10 @@ export class LikesService {
       if (!comment) throw new NotFoundException('التعليق غير موجود');
       if (!user) throw new NotFoundException('المستخدم غير موجود');
 
-      // البحث عن إعجاب موجود
       const existingLike = await manager.findOne(Like, {
         where: { userId, commentId }
       });
 
-      // التبديل بين الإعجاب والإزالة
       if (existingLike) {
         await manager.delete(Like, existingLike.id);
         comment.likesCount = Math.max(0, comment.likesCount - 1);

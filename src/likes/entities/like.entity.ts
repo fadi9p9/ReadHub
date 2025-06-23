@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, Unique, Column, UpdateDateCo
 import { User } from '../../user/entities/user.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 
-// like.entity.ts
 @Entity()
 @Unique(['user', 'comment'])
 export class Like {

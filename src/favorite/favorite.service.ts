@@ -15,14 +15,7 @@ export class FavoriteService {
     private favoriteRepository: Repository<Favorite>,
   ) {}
 
-//   async create(createFavoriteDto: CreateFavoriteDto) {
-//   const { userId, bookId } = createFavoriteDto;
-//     const exists = await this.favoriteRepository.findOne({ where: { user: { id: userId }, book: { id: bookId } } });
-//     if (exists) {
-//         return { message: 'الكتاب موجود بالفعل في المفضلة' };
-//     }
-//     return this.favoriteRepository.save({ user: { id: userId }, book: { id: bookId } });
-// }
+
 
 
 async create(createFavoriteDto: CreateFavoriteDto): Promise<{ message: string, action: 'added' | 'removed' }> {
@@ -154,7 +147,7 @@ async create(createFavoriteDto: CreateFavoriteDto): Promise<{ message: string, a
   const query = this.favoriteRepository
     .createQueryBuilder('favorite')
     .leftJoinAndSelect('favorite.book', 'book')
-    .leftJoinAndSelect('book.categories', 'categories') // إذا كنت تريد تصنيفات الكتاب
+    .leftJoinAndSelect('book.categories', 'categories') 
     .where('favorite.user.id = :userId', { userId })
     .select([
       'favorite.id',

@@ -75,7 +75,6 @@ likeCount: number;
 
   
   @OneToMany(() => BookQuestion, (question) => question.book, {
-    // cascade: true,
     onDelete: 'CASCADE',
   })
   questions: BookQuestion[];

@@ -1,8 +1,7 @@
-// src/reminder/reminder.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { UsersService } from '../user/user.service';
-import { MailService } from '../auth/mail/mail.service'; // المسار الصحيح
+import { MailService } from '../auth/mail/mail.service'; 
 import * as moment from 'moment';
 
 @Injectable()

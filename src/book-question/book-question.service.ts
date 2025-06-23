@@ -17,8 +17,7 @@ export class BookQuestionsService {
 
   async create(createDto: CreateBookQuestionDto) {
     const question = this.questionRepository.create({
-      // bookId: createDto.bookId,
-       book: { id: createDto.bookId },
+      book: { id: createDto.bookId },
       question_text: createDto.question_text,
       option_a: createDto.option_a,
       option_b: createDto.option_b,
@@ -73,7 +72,6 @@ export class BookQuestionsService {
     }
 
   } else {
-    // اللغة الإنجليزية - من الجدول الرئيسي
     if (search) {
       const lowerSearch = `%${search.toLowerCase()}%`;
       query.where(
