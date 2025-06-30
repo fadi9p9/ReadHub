@@ -16,7 +16,7 @@ export class Coupon {
   updated_at: Date;
 
     @UpdateDateColumn()
-    ceated_at: Date;
+    created_at: Date;
   @OneToOne(() => QuizWinner, winner => winner.coupon)
   winner: QuizWinner;
   user: any;

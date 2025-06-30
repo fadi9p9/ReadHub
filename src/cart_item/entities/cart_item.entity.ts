@@ -12,7 +12,7 @@ export class CartItem {
 
 
     @UpdateDateColumn()
-    ceated_at: Date;
+    created_at: Date;
     
   @ManyToOne(() => Cart, (cart) => cart.items,{
     onDelete: 'CASCADE'

@@ -13,7 +13,8 @@ import {
   ParseFloatPipe,
   BadRequestException,
   Put,
-  HttpStatus,HttpCode
+  HttpStatus,HttpCode,
+  DefaultValuePipe
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -182,6 +183,15 @@ async addRating(
   @Get('by-author/:authorId')
 async getBooksByAuthor(@Param('authorId', ParseIntPipe) authorId: number) {
   return this.booksService.findBooksByAuthorId(authorId);
+}
+
+
+@Get(':id/recommendations')
+async getRecommendations(
+  @Param('id', ParseIntPipe) id: number,
+  @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number
+) {
+  return this.booksService.getRecommendedBooks(id, limit);
 }
 
 }

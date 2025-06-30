@@ -453,4 +453,52 @@ async findBooksByAuthorId(authorId: number): Promise<Book[]> {
   
 
 
+async getRecommendedBooks(bookId: number, limit: number = 5): Promise<Book[]> {
+  const baseBook = await this.bookRepository.findOne({
+    where: { id: bookId },
+    relations: ['categories'],
+  });
+
+  if (!baseBook) {
+    throw new NotFoundException(`Book with ID ${bookId} not found`);
+  }
+
+  const baseCategoryIds = baseBook.categories.map(c => c.id);
+
+  const query = this.bookRepository.createQueryBuilder('book')
+    .leftJoinAndSelect('book.categories', 'category')
+    .where('book.id != :bookId', { bookId })
+    .orderBy('book.rating', 'DESC')
+    .addOrderBy('book.created_at', 'DESC')
+    .take(limit);
+
+  if (baseCategoryIds.length > 0) {
+    query
+      .andWhere('category.id IN (:...categoryIds)', { categoryIds: baseCategoryIds })
+      .addSelect(
+        `(SELECT COUNT(*) FROM book_categories bc WHERE bc.bookId = book.id AND bc.categoryId IN (:...categoryIds))`,
+        'common_categories_count'
+      )
+      .addOrderBy('common_categories_count', 'DESC');
+  }
+
+  if (baseBook.userId) {
+    query.orWhere('book.userId = :userId', { userId: baseBook.userId });
+  }
+
+  const recommendedBooks = await query.getMany();
+
+  if (recommendedBooks.length < limit) {
+    const additionalBooks = await this.bookRepository.createQueryBuilder('book')
+      .where('book.id NOT IN (:...ids)', { ids: [bookId, ...recommendedBooks.map(b => b.id)] })
+      .orderBy('RAND()')
+      .take(limit - recommendedBooks.length)
+      .getMany();
+
+    recommendedBooks.push(...additionalBooks);
+  }
+
+  return recommendedBooks;
+}
+
 }

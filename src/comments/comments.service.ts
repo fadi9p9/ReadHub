@@ -7,6 +7,7 @@ import { Book } from '../books/entities/book.entity';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { User } from '../user/entities/user.entity'; 
 import { PaginationCommentDto } from './dto/pagination-comment.dto';
+import { Reply } from 'src/replaies/entities/replay.entity';
 
 
 @Injectable()
@@ -18,6 +19,8 @@ export class CommentsService {
     private readonly userRepository: Repository<User>,  
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,  
+    @InjectRepository(Reply)
+    private readonly replyRepository: Repository<Reply>,
   ) {}
 
 
@@ -220,56 +223,103 @@ async updateRepliesCount(commentId: number): Promise<void> {
     .where('id = :commentId', { commentId })
     .execute();
 }
-async findByUserId(userId: number, paginationDto: PaginationCommentDto, baseUrl: string) {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
 
-    const query = this.commentRepository
-      .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'user')
-      .leftJoinAndSelect('comment.book', 'book')
-      .where('user.id = :userId', { userId })
-      .select([
-        'comment.id',
-        'comment.text',
-        'comment.title',
-        'comment.created_at',
-        'comment.updated_at',
-        'comment.repliesCount',
-        'book.id',
-        'book.title',
-        'book.ar_title'
-      ])
-      .loadRelationCountAndMap('comment.likesCount', 'comment.likes')
-      .take(limit)
-      .skip(skip);
+async findCommentsAndRepliesByUserId(
+  userId: number,
+  paginationDto: PaginationCommentDto,
+  baseUrl: string
+) {
+  const { page = 1, limit = 10 } = paginationDto;
+  const skip = (page - 1) * limit;
 
-    const [comments, total] = await query.getManyAndCount();
-    const totalPages = Math.ceil(total / limit);
+  const commentsQuery = this.commentRepository
+    .createQueryBuilder('comment')
+    .leftJoinAndSelect('comment.user', 'user')
+    .leftJoinAndSelect('comment.book', 'book')
+    .where('user.id = :userId', { userId })
+    .select([
+      'comment.id',
+      'comment.text',
+      'comment.title',
+      'comment.created_at',
+      'comment.updated_at',
+      'comment.repliesCount',
+      'book.id',
+      'book.title',
+      'book.ar_title'
+    ])
+    .take(limit)
+    .skip(skip);
 
-    const formattedComments = comments.map(comment => ({
-      id: comment.id,
-      text: comment.text,
-      title: comment.title,
-      created_at: comment.created_at,
-      updated_at: comment.updated_at,
-      likesCount: comment.likesCount,
-      repliesCount: comment.repliesCount,
-      book: {
-        title: comment.book.title,
-        ar_title: comment.book.ar_title
-      }
-    }));
+  const repliesQuery = this.replyRepository
+    .createQueryBuilder('reply')
+    .leftJoinAndSelect('reply.user', 'user')
+    .leftJoinAndSelect('reply.comment', 'comment')
+    .leftJoinAndSelect('comment.book', 'book')
+    .where('user.id = :userId', { userId })
+    .select([
+      'reply.id',
+      'reply.text',
+      'reply.created_at',
+      'reply.updated_at',
+      'comment.id',
+      'book.id',
+      'book.title',
+      'book.ar_title'
+    ])
+    .take(limit)
+    .skip(skip);
 
-    return {
-      data: formattedComments,
-      meta: {
-        total,
-        page,
-        limit,
-        total_pages: totalPages,
-      },
-      links: this.buildPaginationLinks(baseUrl, page, limit, totalPages),
-    };
+  const [comments, commentsTotal] = await commentsQuery.getManyAndCount();
+  const [replies, repliesTotal] = await repliesQuery.getManyAndCount();
+
+  const total = commentsTotal + repliesTotal;
+  const totalPages = Math.ceil(total / limit);
+
+  const formattedComments = comments.map(comment => ({
+    type: 'comment',
+    id: comment.id,
+    text: comment.text,
+    title: comment.title,
+    created_at: comment.created_at,
+    updated_at: comment.updated_at,
+    repliesCount: comment.repliesCount,
+    book: {
+      id: comment.book.id,
+      title: comment.book.title,
+      ar_title: comment.book.ar_title
+    }
+  }));
+
+  const formattedReplies = replies.map(reply => ({
+    type: 'reply',
+    id: reply.id,
+    text: reply.text,
+    created_at: reply.created_at,
+    updated_at: reply.updated_at,
+    commentId: reply.comment.id,
+    book: {
+      id: reply.comment.book.id,
+      title: reply.comment.book.title,
+      ar_title: reply.comment.book.ar_title
+    }
+  }));
+
+  const combinedResults = [...formattedComments, ...formattedReplies]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+
+  return {
+    data: combinedResults,
+    meta: {
+      total,
+      page,
+      limit,
+      total_pages: totalPages,
+      commentsTotal,
+      repliesTotal
+    },
+    links: this.buildPaginationLinks(baseUrl, page, limit, totalPages),
+  };
 }
 }

@@ -16,7 +16,7 @@ export class Category {
   updated_at: Date;
 
     @UpdateDateColumn()
-    ceated_at: Date;
+    created_at: Date;
   @ManyToMany(() => Book, (book) => book.categories)
   books: Book[];
 }

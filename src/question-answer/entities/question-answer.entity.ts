@@ -10,7 +10,7 @@ export class QuestionAnswer {
   updated_at: Date;
 
     @UpdateDateColumn()
-    ceated_at: Date;
+    created_at: Date;
 
     @Column({ name: 'is_correct' }) 
     isCorrect: boolean

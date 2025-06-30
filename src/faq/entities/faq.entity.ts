@@ -26,7 +26,7 @@ export class Faq {
 
   
       @UpdateDateColumn()
-      ceated_at: Date;
+      created_at: Date;
 
       @UpdateDateColumn()
       updated_at: Date;

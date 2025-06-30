@@ -39,7 +39,7 @@ export class BookQuestion {
     updated_at: Date;
 
     @UpdateDateColumn()
-    ceated_at: Date;
+    created_at: Date;
 
 
   @OneToMany(() => QuestionAnswer, (answer) => answer.question)

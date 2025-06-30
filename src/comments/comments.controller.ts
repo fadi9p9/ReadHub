@@ -38,14 +38,14 @@ async remove(@Body() body: { ids: number[] }) {
   return this.commentsService.remove(body.ids);
 }
 
-@Get('user/:userId')
-async findByUserId(
+@Get('user/:userId/all')
+async findCommentsAndRepliesByUserId(
   @Param('userId') userId: string,
   @Query() paginationDto: PaginationCommentDto,
   @Req() request: Request,
 ) {
   const baseUrl = `${request.protocol}://${request.get('host')}${request.path}`;
-  return this.commentsService.findByUserId(+userId, paginationDto, baseUrl);
+  return this.commentsService.findCommentsAndRepliesByUserId(+userId, paginationDto, baseUrl);
 }
 
 }
