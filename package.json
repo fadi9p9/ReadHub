@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build && cp -r uploads dist/",
+    "build": "nest build ",
     "start:prod": "node dist/main",
     "seed:run": "ts-node src/database/seeders/run-seeders.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
