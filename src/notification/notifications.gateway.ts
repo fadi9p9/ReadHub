@@ -15,13 +15,14 @@ import { Notification } from './entities/notification.entity';
 import { forwardRef, Inject } from '@nestjs/common';
 
 @WebSocketGateway(500, {
+  transports: ['websocket'],
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Authorization'],
     credentials: true
   },
-  transports: ['websocket'] 
+  // transports: ['websocket'] 
 })
 export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
