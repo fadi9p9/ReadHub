@@ -1,25 +1,67 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { User } from 'src/user/entities/user.entity';
 import { UserRole } from 'src/user/entities/user.entity';
+import { NotificationsGateway } from './notifications.gateway';
+import { NotificationsConnectionService } from './notifications.connection.service';
 
 @Injectable()
 export class NotificationService {
-  constructor(
+   constructor(
     @InjectRepository(Notification)
     private readonly notificationRepo: Repository<Notification>,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @Inject(forwardRef(() => NotificationsGateway))
+    private readonly notificationsGateway: NotificationsGateway,
+
+    private readonly connectionService: NotificationsConnectionService,
   ) {}
 
   async create(dto: CreateNotificationDto) {
     const notification = this.notificationRepo.create(dto);
-    return this.notificationRepo.save(notification);
+    const savedNotification = await this.notificationRepo.save(notification);
+    
+    this.notificationsGateway.sendNewNotification(dto.userId, savedNotification);
+    
+    return savedNotification;
   }
+
+     async getPendingNotifications(userId: number): Promise<Notification[]> {
+    if (this.connectionService.isUserConnected(userId)) {
+      return [];
+    }
+    return this.notificationRepo.find({
+      where: {
+        userId,
+        isRead: false,
+        isDelivered: false, 
+      },
+      order: { createdAt: 'DESC' },
+      take: 10,
+    });
+  }
+
+
+
+  async markAsDelivered(id: number) {
+  await this.notificationRepo.update(id, { isDelivered: true });
+}
+
+async getUnreadCount(userId: number): Promise<number> {
+  return this.notificationRepo.count({
+    where: {
+      userId,
+      isRead: false,
+    },
+  });
+}
+
 
   async notifyAdmins(message: string) {
     const admins = await this.userRepository.find({

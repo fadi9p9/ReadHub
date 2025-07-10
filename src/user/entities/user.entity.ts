@@ -106,10 +106,10 @@ subscriptionEndsAt: Date | null;
 @OneToMany(() => Book, (book) => book.user)
 books: Book[];
 
-@OneToMany(() => PendingBook, (pendingBook) => pendingBook.author)
+@OneToMany(() => PendingBook, (pendingBook) => pendingBook.author,{onDelete:'CASCADE'})
 pendingBooks: PendingBook[];
 
-@OneToMany(() => Notification, (notification) => notification.user)
+@OneToMany(() => Notification, (notification) => notification.user,{onDelete:'CASCADE'})
 notification: Notification[];
 
 

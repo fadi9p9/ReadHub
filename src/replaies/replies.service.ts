@@ -6,6 +6,7 @@ import { CreateReplyDto } from './dto/create-replay.dto';
 import { UpdateReplayDto } from './dto/update-replay.dto';
 import { User } from 'src/user/entities/user.entity';
 import { PaginationReplyDto } from './dto/pagination-reply.dto';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Injectable()
 export class RepliesService {
@@ -14,20 +15,73 @@ export class RepliesService {
     private readonly replyRepository: Repository<Reply>,
   ) {}
 
-  create(createReplyDto: CreateReplyDto) {
-    
-    
-    const replyData = {
-      ...createReplyDto,
-      user: { id: createReplyDto.userId }, 
-      Comment: { id: createReplyDto.commentId },  
+  async create(createReplyDto: CreateReplyDto) {
+  const replyData = {
+    ...createReplyDto,
+    user: { id: createReplyDto.userId },
+    comment: { id: createReplyDto.commentId },
+  };
+
+  const reply = this.replyRepository.create(replyData);
+
+  return await this.replyRepository.manager.transaction(async (manager) => {
+    const savedReply = await manager.save(reply);
+
+    await manager.query(
+      `UPDATE comment SET repliesCount = repliesCount + 1 WHERE id = ?`,
+      [createReplyDto.commentId]
+    );
+
+    const fullReply = await manager.findOne(Reply, {
+      where: { id: savedReply.id },
+      relations: ['user', 'comment', 'comment.user', 'comment.book'],
+      select:{
+        id:true,
+        text:true,
+        created_at:true,
+        updated_at:true,
+        user:{
+          id:true,
+          first_name:true,
+          last_name:true,
+          img:true},
+
+        comment:{
+          id:true,
+          text:true,
+          created_at:true,
+          updated_at:true,
+        repliesCount:true,
+          user:{
+            id:true,
+            first_name:true,
+            last_name:true,
+            img:true},
+          book:{
+            id:true,
+            title:true,
+            user:{
+              id:true,
+              first_name:true,
+              last_name:true,
+              img:true},
+            },
+          
+
+      },
+      },
+      
+    });
+
+    return {
+      message: 'Reply created successfully',
+      reply: fullReply,
     };
-    
-    const reply = this.replyRepository.create(replyData);
+  });
+}
 
 
-    return this.replyRepository.save(reply);
-  }
+
 
  async findAll(paginationDto: PaginationReplyDto) {
     const { limit = 10, page = 1, userId, commentId } = paginationDto;
@@ -134,26 +188,47 @@ export class RepliesService {
     */
 }
 
-  async remove(ids: number[] | number) {
+ async remove(ids: number[] | number) {
   const idsArray = Array.isArray(ids) ? ids : [ids];
-  
-  const deleteResult = await this.replyRepository.delete(idsArray);
-  
-  const affectedRows = deleteResult.affected || 0;
-  
-  if (affectedRows === 0) {
+
+  const replies = await this.replyRepository.find({
+    where: idsArray.map((id) => ({ id })),
+    relations: ['comment'],
+  });
+
+  if (replies.length === 0) {
     throw new NotFoundException(`No replies found with the provided IDs`);
   }
-  
-  if (affectedRows < idsArray.length) {
-    return { 
-      message: `Only ${affectedRows} replies deleted successfully`, 
-      warning: 'Some replies were not found' 
+
+  await this.replyRepository.manager.transaction(async (manager) => {
+    await manager.delete(Reply, idsArray);
+
+    const commentCounts: Record<number, number> = {};
+
+    for (const reply of replies) {
+      const commentId = reply.comment.id;
+      commentCounts[commentId] = (commentCounts[commentId] || 0) + 1;
+    }
+
+    for (const [commentId, count] of Object.entries(commentCounts)) {
+      await manager.query(
+  `UPDATE comment SET repliesCount = repliesCount - ? WHERE id = ?`,
+  [count, commentId]
+);
+
+    }
+  });
+
+  if (replies.length < idsArray.length) {
+    return {
+      message: `Only ${replies.length} replies deleted successfully`,
+      warning: 'Some replies were not found',
     };
   }
-  
-  return { 
-    message: `${affectedRows} replies deleted successfully` 
+
+  return {
+    message: `${replies.length} replies deleted successfully`,
   };
 }
+
 }

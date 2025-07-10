@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { UsersService } from '../user/user.service';
 import { JwtStrategy } from './jwt.strategy';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MailModule } from './mail/mail.module';
       inject: [ConfigService],
     }),
     ConfigModule,
+    forwardRef(() => NotificationModule),
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, UsersService, JwtStrategy, MailService],

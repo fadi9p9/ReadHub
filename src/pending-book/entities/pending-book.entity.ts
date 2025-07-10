@@ -27,7 +27,7 @@ export class PendingBook {
   // @Column()
   // author: string;
 
-  @ManyToOne(() => User, (user) => user.pendingBooks)
+  @ManyToOne(() => User, (user) => user.pendingBooks,{onDelete:'CASCADE'})
 @JoinColumn({ name: 'userId' })
 author: User;
 

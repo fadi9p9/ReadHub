@@ -28,6 +28,9 @@ export class Notification {
   @Column()
   userId: number;
 
+  @Column({ default: false})
+  isDelivered: boolean;
+
   @ManyToOne(() => User, (user) => user.notification, { onDelete: 'CASCADE' })
 @JoinColumn({ name: 'userId' })
 user: User;
