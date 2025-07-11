@@ -14,8 +14,10 @@ app.useStaticAssets(join(process.cwd(), 'uploads'), {
 });
 
   app.enableCors({
-    origin: 'http://localhost:3000', 
-    credentials: true,
+    origin: ['http://127.0.0.1:5501', 'http://localhost:3000', 'http://127.0.0.1:5501', 'http://localhost:5501'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
   });
 
   await app.listen(5000);

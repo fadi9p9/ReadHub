@@ -46,6 +46,7 @@ import { StaticPageModule } from './static-page/static-page.module';
 import { AuthorProfileModule } from './author-profile/author-profile.module';
 import { PendingBookModule } from './pending-book/pending-book.module';
 import { NotificationModule } from './notification/notification.module';
+import { SupportModule } from './support/support.module';
 
 
 @Module({
@@ -105,7 +106,8 @@ import { NotificationModule } from './notification/notification.module';
     StaticPageModule,
     AuthorProfileModule,
     PendingBookModule,
-    NotificationModule
+    NotificationModule,
+    SupportModule
     
     
   ],

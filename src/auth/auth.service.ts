@@ -329,13 +329,14 @@ export class AuthService {
 
 
 
-  async verifyToken(token: string): Promise<{ id: number }> {
+  async verifyToken(token: string): Promise<{ id: number; role: string }> {
   try {
     if (this.isTokenRevoked(token)) {
       throw new UnauthorizedException('Token has been revoked');
     }
 
     const payload = this.jwtService.verify(token);
+
     const user = await this.usersRepository.findOne({
       where: { id: payload.sub, token }
     });
@@ -344,10 +345,11 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return { id: user.id };
+    return { id: user.id, role: user.role };
   } catch (e) {
     throw new UnauthorizedException('Invalid token');
   }
 }
+
   
 }

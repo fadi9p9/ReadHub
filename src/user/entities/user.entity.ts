@@ -10,6 +10,7 @@ import { Like } from 'src/likes/entities/like.entity';
 import { Book } from 'src/books/entities/book.entity';
 import { PendingBook } from 'src/pending-book/entities/pending-book.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
+import { SupportMessage } from 'src/support/entities/support-message.entity/support-message.entity';
 
 @Entity()
 export class User {
@@ -111,6 +112,9 @@ pendingBooks: PendingBook[];
 
 @OneToMany(() => Notification, (notification) => notification.user,{onDelete:'CASCADE'})
 notification: Notification[];
+
+  @OneToMany(() => SupportMessage, message => message.user)
+  supportMessages: SupportMessage[];
 
 
 }
