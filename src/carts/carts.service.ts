@@ -118,4 +118,50 @@ async remove(ids: number[] | number) {
     message: `${affectedRows} carts deleted successfully` 
   };
 }
+
+async findCartByUserId(userId: number) {
+  const cart = await this.cartRepository.findOne({
+    where: { user: { id: userId } },
+    relations: {
+      user: true,
+      items: {
+        book: true
+      }
+    },
+    select: {
+      id: true,
+      created_at: true,
+      updated_at: true,
+      status: true,
+      user: {
+        id: true,
+        email: true,
+      },
+      items: {
+        id: true,
+        book: {
+          id: true,
+          title: true, 
+          price: true
+        }
+      }
+    },
+    order: {
+      created_at: 'DESC' 
+    },
+    withDeleted: false
+  });
+
+  if (!cart) {
+    throw new NotFoundException(`Cart for user with ID ${userId} not found`);
+  }
+
+  return {
+    ...cart,
+    items: cart.items.map(item => ({
+      ...item,
+    }))
+  };
+}
+
 }

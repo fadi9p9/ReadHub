@@ -280,7 +280,7 @@ async findAll(paginationDto: PaginationDto) {
       );
       if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
     }
-    book.img = `/uploads/${image.filename}`;
+    book.img = `/uploads/images${image.filename}`;
   }
 
   if (file) {
@@ -292,7 +292,7 @@ async findAll(paginationDto: PaginationDto) {
       );
       if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
     }
-    book.pdf = `/uploads/${file.filename}`;
+    book.pdf = `/uploads/pdfs${file.filename}`;
   }
 
   if (updateBookDto.categoryIds) {

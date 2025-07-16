@@ -6,6 +6,8 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { PaginationQuizDto } from './dto/pagination-quiz.dto';
 import { Book } from '../books/entities/book.entity';
+import { QuizResult } from 'src/quiz-result/entities/quiz-result.entity';
+import { QuizWinner } from 'src/quiz-winner/entities/quiz-winner.entity';
 
 @Injectable()
 export class QuizzesService {
@@ -14,6 +16,11 @@ export class QuizzesService {
     private readonly quizRepository: Repository<Quiz>,
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
+    @InjectRepository(QuizResult)
+    private readonly quizResultRepository: Repository<QuizResult>,
+    @InjectRepository(QuizWinner)
+    private readonly quizWinnerRepository: Repository<QuizWinner>,
+
   ) {}
 
   async create(createQuizDto: CreateQuizDto) {
@@ -198,4 +205,113 @@ async getAllFormatted() {
   }));
 }
 
+async getUserQuizzesWithResults(
+  userId: number,
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+) {
+  const skip = (page - 1) * limit;
+
+  const quizzesQuery = this.quizRepository.createQueryBuilder('quiz')
+    .leftJoinAndSelect('quiz.book', 'book')
+    .leftJoinAndSelect('quiz.questions', 'questions')
+    .leftJoinAndSelect('quiz.results', 'results')
+    .leftJoinAndSelect('results.user', 'user')
+    .where('results.user.id = :userId', { userId })
+    .take(limit)
+    .skip(skip);
+
+  if (search) {
+    quizzesQuery.andWhere(
+      '(quiz.title LIKE :search OR quiz.ar_title LIKE :search OR book.title LIKE :search OR book.ar_title LIKE :search)',
+      { search: `%${search}%` }
+    );
+  }
+
+  const [quizzes, totalQuizzes] = await quizzesQuery.getManyAndCount();
+
+  const [results, totalResults] = await this.quizResultRepository.findAndCount({
+    where: { user: { id: userId } },
+    relations: ['quiz'],
+    take: limit,
+    skip,
+    order: { created_at: 'DESC' }
+  });
+
+  const [winners, totalWinners] = await this.quizWinnerRepository.findAndCount({
+    where: { user: { id: userId } },
+    relations: ['quiz', 'coupon'],
+    take: limit,
+    skip,
+    order: { created_at: 'DESC' }
+  });
+
+  const processQuestions = (questions) => {
+    return questions?.map(q => ({
+      id: q.id,
+      question_text: q.question_text?.replace(/\\"/g, '"') || null,
+    })) || [];
+  };
+
+  const processResults = (results) => {
+    return results?.filter(r => r.user?.id === userId)
+      .map(r => ({
+        id: r.id,
+        user: {
+          id: r.user?.id,
+          fullName: `${r.user?.first_name || ''} ${r.user?.last_name || ''}`.trim(),
+          email: r.user?.email || null
+        },
+        total_correct: r.total_correct,
+        total_questions: r.total_questions,
+        created_at: r.created_at
+      })) || [];
+  };
+
+  return {
+    quizzes: quizzes.map(quiz => ({
+      id: quiz.id,
+      title: quiz.title,
+      ar_title: quiz.ar_title,
+      book: {
+        id: quiz.book?.id,
+        title: quiz.book?.title,
+        ar_title: quiz.book?.ar_title
+      },
+      questions: processQuestions(quiz.questions),
+      results: processResults(quiz.results)
+    })),
+    results: results.map(r => ({
+      id: r.id,
+      quiz: {
+        id: r.quiz?.id,
+        title: r.quiz?.title
+      },
+      total_correct: r.total_correct,
+      total_questions: r.total_questions,
+      created_at: r.created_at
+    })),
+    winners: winners.map(w => ({
+      id: w.id,
+      quiz: {
+        id: w.quiz?.id,
+        title: w.quiz?.title
+      },
+      coupon: {
+        id: w.coupon?.id,
+        code: w.coupon?.code
+      },
+      created_at: w.created_at
+    })),
+    pagination: {
+      totalQuizzes,
+      totalResults,
+      totalWinners,
+      currentPage: page,
+      totalPages: Math.ceil(Math.max(totalQuizzes, totalResults, totalWinners) / limit),
+      limit
+    }
+  };
+}
 }

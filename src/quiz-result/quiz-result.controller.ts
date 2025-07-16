@@ -36,4 +36,9 @@ findAllPaginated(
 async remove(@Body() body: { ids: number[] }) {
   return this.quizResultsService.remove(body.ids);
 }
+
+@Get('user/:userId')
+async getUserQuizResults(@Param('userId', ParseIntPipe) userId: number) {
+  return this.quizResultsService.getUserQuizResults(userId);
+}
 }
