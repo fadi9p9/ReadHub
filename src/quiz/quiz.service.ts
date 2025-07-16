@@ -93,22 +93,23 @@ export class QuizzesService {
     };
   }
 
-  async findOne(id: number, lang?: string) {
+async findOne(id: number, lang?: string) {
     const quiz = await this.quizRepository.findOne({
       where: { id },
-      relations: ['book', 'questions'],
-      select:{
-        id:true,
-        title:true,
-        ar_title:true,
-        book:{
-          id:true,
-          title:true,
-          ar_title:true,
+      relations: ['book', 'questions' ],
+      select: {
+        id: true,
+        title: true,
+        ar_title: true,
+        book: {
+          id: true,
+          title: true,
+          ar_title: true,
         },
-        questions:{
-          id:true,
-          question_text:true
+        questions: {
+          id: true,
+          question_text: true,
+          correct_option:true,
         }
       }
     });
