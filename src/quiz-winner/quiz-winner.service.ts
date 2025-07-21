@@ -139,4 +139,29 @@ export class QuizWinnersService {
   };
 }
 
+async getUserQuizWinners(userId: number) {
+  const winners = await this.quizWinnerRepository.find({
+    where: { user: { id: userId } },
+    relations: ['quiz', 'coupon'],
+    select: {
+      id: true,
+      created_at: true,
+      quiz: {
+        id: true,
+        title: true,
+        ar_title: true,
+      },
+      coupon: {
+        id: true,
+        code: true,
+        discount_value: true,
+      }
+    },
+    order: {
+      created_at: 'DESC'
+    }
+  });
+
+  return winners || [];
+}
 }

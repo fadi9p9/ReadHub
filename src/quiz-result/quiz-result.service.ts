@@ -146,4 +146,41 @@ export class QuizResultsService {
   };
 }
 
+  async getUserQuizResults(userId: number) {
+  const results = await this.quizResultRepository.find({
+    where: { user: { id: userId } },
+    relations: ['quiz', 'quiz.book', 'quiz.questions'],
+    select: {
+      id: true,
+      total_correct: true,
+      total_questions: true,
+      created_at: true,
+      quiz: {
+        id: true,
+        title: true,
+        ar_title: true,
+        created_at: true,
+        book: {
+          id: true,
+          title: true,
+          ar_title: true,
+        },
+        questions: {
+          id: true,
+          question_text: true,
+          
+        }
+      }
+    },
+    order: {
+      created_at: 'DESC'
+    }
+  });
+
+  if (!results || results.length === 0) {
+    throw new NotFoundException(`No quiz results found for user with ID ${userId}`);
+  }
+
+  return results;
+}
 }

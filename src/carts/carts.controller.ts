@@ -31,4 +31,9 @@ async getCarts(@Query('status') status?: string) {
 async remove(@Body() body: { ids: number[] }) {
   return this.cartsService.remove(body.ids);
 }
+
+  @Get('user/:userId')
+async findCartByUserId(@Param('userId') userId: number) {
+  return this.cartsService.findCartByUserId(userId);
+}
 }

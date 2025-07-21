@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { QuizzesService } from './quiz.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
@@ -34,5 +34,15 @@ export class QuizzesController {
   @Delete()
 async remove(@Body() body: { ids: number[] }) {
   return this.quizzesService.remove(body.ids);
+}
+
+@Get('user/:userId/all')
+async getUserQuizzesWithResults(
+  @Param('userId', ParseIntPipe) userId: number,
+  @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+  @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  @Query('search') search?: string
+) {
+  return this.quizzesService.getUserQuizzesWithResults(userId, page, limit, search);
 }
 }
