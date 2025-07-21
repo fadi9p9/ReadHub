@@ -47,6 +47,7 @@ import { AuthorProfileModule } from './author-profile/author-profile.module';
 import { PendingBookModule } from './pending-book/pending-book.module';
 import { NotificationModule } from './notification/notification.module';
 import { SupportModule } from './support/support.module';
+import { AudioModule } from './audio/audio.module';
 
 
 @Module({
@@ -107,7 +108,8 @@ import { SupportModule } from './support/support.module';
     AuthorProfileModule,
     PendingBookModule,
     NotificationModule,
-    SupportModule
+    SupportModule,
+    AudioModule
     
     
   ],

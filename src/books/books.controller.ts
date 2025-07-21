@@ -14,21 +14,27 @@ import {
   BadRequestException,
   Put,
   HttpStatus,HttpCode,
-  DefaultValuePipe
+  DefaultValuePipe,
+  NotFoundException,
+  Res,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { basename, extname } from 'path';
 import { BooksService } from './books.service';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { UsersService } from 'src/user/user.service';
 import { GetSubscribedBooksDto } from 'src/user/dto/create-user.dto';
 import { CreateBookDto } from './dto/create-book.dto';
+import { Response } from 'express';
+import { AudioService } from 'src/audio/audio.service';
 
 @Controller('books')
 export class BooksController {
-  constructor(private readonly booksService: BooksService,private readonly userService: UsersService 
+  constructor(
+    private readonly booksService: BooksService,private readonly userService: UsersService,
+    private readonly audioService: AudioService, 
   ) {}
 
   @Post()
@@ -127,25 +133,20 @@ export class BooksController {
   }
 
   @Delete()
-async remove(@Body() body: { ids: number[] }) {
-  return this.booksService.remove(body.ids);
-}
-
+  async remove(@Body() body: { ids: number[] }) {
+    return this.booksService.remove(body.ids);
+  }
 
   @Post(':id/add-rating')
-async addRating(
-  @Param('id', ParseIntPipe) bookId: number,
-  @Query('rating', ParseFloatPipe) rating: number,
-) {
-  if (rating < 0 || rating > 5) {
-    throw new BadRequestException('Rating must be between 0 and 5');
-  }
-  return this.booksService.addRating(bookId, rating);
-}
-
-
-
-
+  async addRating(
+    @Param('id', ParseIntPipe) bookId: number,
+    @Query('rating', ParseFloatPipe) rating: number,
+  )   {
+        if (rating < 0 || rating > 5) {
+          throw new BadRequestException('Rating must be between 0 and 5');
+        }
+        return this.booksService.addRating(bookId, rating);
+      }
 
   @Post(':id/categories')
   addCategories(
@@ -170,6 +171,7 @@ async addRating(
   ) {
     return this.booksService.removeCategories(id, categoryIds);
   }
+
   @Post('subscribed')
   async getSubscribedBooks(@Body() body: { userId: number }) {
     const { userId } = body;
@@ -180,18 +182,29 @@ async addRating(
 
     return this.booksService.getSubscribedBooks(userId);
   }
+
   @Get('by-author/:authorId')
-async getBooksByAuthor(@Param('authorId', ParseIntPipe) authorId: number) {
-  return this.booksService.findBooksByAuthorId(authorId);
-}
+  async getBooksByAuthor(@Param('authorId', ParseIntPipe) authorId: number) {
+    return this.booksService.findBooksByAuthorId(authorId);
+  }
 
 
-@Get(':id/recommendations')
-async getRecommendations(
-  @Param('id', ParseIntPipe) id: number,
-  @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number
-) {
-  return this.booksService.getRecommendedBooks(id, limit);
-}
+  @Get(':id/recommendations')
+  async getRecommendations(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number
+  ) {
+    return this.booksService.getRecommendedBooks(id, limit);
+  }
 
+  @Get(':id/audio')
+  async getBookAudio(@Param('id') bookId: number, @Res() res: Response) {
+    const audio = await this.audioService.findByBookId(bookId);
+
+    if (!audio) {
+      throw new NotFoundException('Audio not found for this book');
+    }
+
+    return this.audioService.streamAudio(audio.filePath, res);
+  }
 }

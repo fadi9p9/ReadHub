@@ -11,6 +11,7 @@ import { Book } from 'src/books/entities/book.entity';
 import { PendingBook } from 'src/pending-book/entities/pending-book.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
 import { SupportMessage } from 'src/support/entities/support-message.entity/support-message.entity';
+import { Audio } from 'src/audio/entities/audio.entity';
 
 @Entity()
 export class User {
@@ -95,7 +96,7 @@ quizWinners: QuizWinner[];
 replies: Reply[];
 
 
- @Column('boolean', { default: false })
+@Column('boolean', { default: false })
 isSubscribed: boolean;
 
 @Column('varchar', { nullable: true })
@@ -107,14 +108,17 @@ subscriptionEndsAt: Date | null;
 @OneToMany(() => Book, (book) => book.user)
 books: Book[];
 
+@OneToMany(() => Audio, (audio) => audio.user)
+audios: Audio[];
+
 @OneToMany(() => PendingBook, (pendingBook) => pendingBook.author,{onDelete:'CASCADE'})
 pendingBooks: PendingBook[];
 
 @OneToMany(() => Notification, (notification) => notification.user,{onDelete:'CASCADE'})
 notification: Notification[];
 
-  @OneToMany(() => SupportMessage, message => message.user)
-  supportMessages: SupportMessage[];
+@OneToMany(() => SupportMessage, message => message.user)
+supportMessages: SupportMessage[];
 
 
 }

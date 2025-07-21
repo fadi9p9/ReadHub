@@ -8,6 +8,9 @@ export class CreateCartItemDto {
   bookId: number;
 
   @IsInt()
+  audioId: number;
+
+  @IsInt()
   @Min(1)
   quantity: number;
 }

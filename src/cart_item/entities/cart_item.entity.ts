@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { Cart } from '../../carts/entities/cart.entity';
+import { Audio } from 'src/audio/entities/audio.entity';
 
 @Entity()
 export class CartItem {
@@ -23,6 +24,11 @@ export class CartItem {
     onDelete: 'CASCADE'
   })
   book: Book;
+
+  @ManyToOne(() => Audio, (audio) => audio.cartItems,{
+    onDelete: 'CASCADE'
+  })
+  audio: Audio;
 
   @Column({ type: 'int', default: 1 })
   quantity: number;

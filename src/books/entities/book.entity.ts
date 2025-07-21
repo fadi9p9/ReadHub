@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany, UpdateDateColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Comment } from '../../comments/entities/comment.entity';
 import { BookQuestion } from '../../book-question/entities/book-question.entity';
@@ -6,6 +6,7 @@ import { CartItem } from '../../cart_item/entities/cart_item.entity';
 import { Favorite } from '../../favorite/entities/favorite.entity';
 import { Quiz } from '../../quiz/entities/quiz.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Audio } from 'src/audio/entities/audio.entity';
 
 @Entity()
 export class Book {
@@ -49,7 +50,7 @@ export class Book {
   total_pages: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-discounted_price: number | null;
+  discounted_price: number | null;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
@@ -69,9 +70,9 @@ discounted_price: number | null;
 
   @OneToMany(() => Comment, (comment) => comment.book, {
   onDelete: 'CASCADE',
-})
-comments: Comment[];
-likeCount: number;
+  })
+  comments: Comment[];
+  likeCount: number;
 
   
   @OneToMany(() => BookQuestion, (question) => question.book, {
@@ -96,11 +97,16 @@ likeCount: number;
   eager: false, 
   onDelete: 'CASCADE',
   nullable: true 
-})
+  })
+
 user: User;
-
   @Column({ nullable: true })
-userId: number | null;
+  userId: number | null;
 
+@OneToOne(() => Audio, (audio) => audio.book, {
+  cascade: true,
+  nullable: true,
+})
+audio: Audio;
 
 }
