@@ -109,6 +109,10 @@ async findOne(id: number, lang?: string) {
         questions: {
           id: true,
           question_text: true,
+          option_a:true,
+          option_b:true,
+          option_c:true,
+          option_d:true,
           correct_option:true,
         }
       }
