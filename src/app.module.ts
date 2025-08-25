@@ -48,6 +48,7 @@ import { PendingBookModule } from './pending-book/pending-book.module';
 import { NotificationModule } from './notification/notification.module';
 import { SupportModule } from './support/support.module';
 import { AudioModule } from './audio/audio.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 
 @Module({
@@ -109,7 +110,8 @@ import { AudioModule } from './audio/audio.module';
     PendingBookModule,
     NotificationModule,
     SupportModule,
-    AudioModule
+    AudioModule,
+    StatisticsModule
     
     
   ],
