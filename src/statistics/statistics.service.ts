@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { Book } from '../books/entities/book.entity';
 import { Cart } from '../carts/entities/cart.entity';
 import { User } from '../user/entities/user.entity';
 import { Quiz } from '../quiz/entities/quiz.entity';
 import { Coupon } from '../coupon/entities/coupon.entity';
+import { QuizResult } from '../quiz-result/entities/quiz-result.entity';
 
 @Injectable()
 export class StatisticsService {
@@ -24,6 +25,9 @@ export class StatisticsService {
     
     @InjectRepository(Coupon)
     private readonly couponRepository: Repository<Coupon>,
+    
+    @InjectRepository(QuizResult)
+    private readonly quizResultRepository: Repository<QuizResult>,
   ) {}
 
   async getGeneralStatistics() {
@@ -60,21 +64,34 @@ export class StatisticsService {
     });
 
     if (!user) {
-      return ('User not found');
+      throw new Error('User not found');
     }
 
-    const user_books_count = user.books?.length || 0;
-
-    const user_purchased_carts = user.carts?.filter(cart => cart.status === 'paid').length || 0;
-
-    const user_created_books_count = await this.bookRepository.count({
-      where: { userId }
-    });
+    const [
+      user_books_count,
+      user_purchased_carts,
+      user_created_books_count,
+      user_quiz_participations_count,
+      user_quiz_wins_count
+    ] = await Promise.all([
+      user.books?.length || 0,
+      user.carts?.filter(cart => cart.status === 'paid').length || 0,
+      this.bookRepository.count({ where: { userId } }),
+      this.quizResultRepository.count({ where: { user: { id: userId } } }),
+      this.quizResultRepository.count({
+        where: { 
+          user: { id: userId },
+          total_correct: MoreThanOrEqual(8),
+          total_questions: 10
+        }
+      })
+    ]);
 
     return {
-      user_books_count,
       user_purchased_carts_count: user_purchased_carts,
-      user_created_books_count
+      user_created_books_count,
+      user_quiz_participations_count,
+      user_quiz_wins_count
     };
   }
 }
