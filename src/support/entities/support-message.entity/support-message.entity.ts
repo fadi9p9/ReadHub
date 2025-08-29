@@ -6,7 +6,7 @@ export class SupportMessage {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, user => user.supportMessages)
+  @ManyToOne(() => User, user => user.supportMessages,{onDelete:'CASCADE'})
   @JoinColumn({ name: 'user_id' })
   user: User;
 

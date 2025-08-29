@@ -117,7 +117,7 @@ pendingBooks: PendingBook[];
 @OneToMany(() => Notification, (notification) => notification.user,{onDelete:'CASCADE'})
 notification: Notification[];
 
-@OneToMany(() => SupportMessage, message => message.user)
+@OneToMany(() => SupportMessage, message => message.user,{onDelete:'CASCADE'})
 supportMessages: SupportMessage[];
 
 
