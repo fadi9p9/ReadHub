@@ -10,6 +10,8 @@ import * as fs from 'fs';
 import { Category } from '../categories/entities/category.entity';
 import { User } from 'src/user/entities/user.entity';
 import { UsersService } from 'src/user/user.service';
+import { Favorite } from '../favorite/entities/favorite.entity';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class BooksService {
   constructor(
@@ -21,6 +23,9 @@ export class BooksService {
     private readonly userService: UsersService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Favorite) 
+    private favoriteRepository: Repository<Favorite>,
+    private jwtService: JwtService,
   ) {}
    private parseCategoryIds(categoryIds: any): number[] {
     if (!categoryIds) return [];
@@ -69,26 +74,61 @@ export class BooksService {
   
   return await this.bookRepository.save(book);
 }
-async findOne(id: number, lang?: string) {
-    const book = await this.bookRepository.findOne({
-      where: { id },
-      relations: ['categories'],
-    });
 
-    if (!book) {
-      throw new NotFoundException(`Book with ID ${id} not found`);
+async findOne(id: number, lang?: string, token?: string) {
+  const book = await this.bookRepository.findOne({
+    where: { id },
+    relations: ['categories'],
+  });
+
+  if (!book) {
+    throw new NotFoundException(`Book with ID ${id} not found`);
+  }
+
+  let isFavorite = false;
+  let userId = null;
+  
+  if (token) {
+    try {
+      const actualToken = token.replace('Bearer ', '');
+      const payload = this.jwtService.verify(actualToken);
+      userId = payload.sub;
+      
+      console.log('User ID from token:', userId);
+      console.log('Book ID:', book.id);
+      
+      if (userId) {
+        const favorite = await this.favoriteRepository.findOne({
+          where: {
+            user: { id: userId },
+            book: { id: book.id }
+          },
+          relations: ['user', 'book']
+        });
+        
+        console.log('Favorite found:', favorite);
+        isFavorite = !!favorite;
+      }
+    } catch (error) {
+      console.error('Token verification error:', error);
+      isFavorite = false;
     }
+  }
 
-    if (lang === 'ar') {
-      return {
-        ...book,
-        title: book.ar_title || book.title,
-        description: book.ar_description || book.description,
-      };
-    }
+  const bookData = {
+    ...book,
+    userId, 
+    isFavorite,
+    ...(lang === 'ar' && {
+      title: book.ar_title || book.title,
+      description: book.ar_description || book.description,
+    })
+  };
 
-    return book;
+  return bookData;
 }
+
+
 async findAll(paginationDto: PaginationDto) {
   
     const {

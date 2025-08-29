@@ -7,6 +7,7 @@ import {
   Patch,
   Delete,
   Query,
+  Headers,
   UploadedFiles,
   UseInterceptors,
   ParseIntPipe,
@@ -80,12 +81,13 @@ export class BooksController {
     return this.booksService.getAllFormatted();
   }
 
-  @Get(':id')
+ @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
     @Query('lang') lang?: string,
+    @Headers('authorization') authorization?: string, 
   ) {
-    return this.booksService.findOne(id, lang);
+    return this.booksService.findOne(id, lang, authorization);
   }
 
 
