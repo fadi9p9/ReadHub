@@ -11,4 +11,18 @@ export class TokenResponseDto {
     role: string;
     img?: string;
   };
+  cart?: { 
+    id: number;
+    status: string;
+    created_at: Date;
+    items: {
+      id: number;
+      quantity: number;
+      book: {
+        id: number;
+        title: string;
+        price: number;
+      } | null;
+    }[];
+  } | null;
 }

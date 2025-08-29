@@ -12,13 +12,14 @@ import { JwtStrategy } from './jwt.strategy';
 import { MailService } from './mail/mail.service';
 import { MailModule } from './mail/mail.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { Cart } from 'src/carts/entities/cart.entity';
 
 @Module({
   imports: [
 
     MailModule,
     PassportModule.register({ defaultStrategy: ['google', 'jwt'] }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User,Cart]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

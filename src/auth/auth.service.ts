@@ -14,7 +14,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { MailService } from './mail/mail.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-
+import { Cart } from '../carts/entities/cart.entity'; 
 @Injectable()
 export class AuthService {
   private revokedTokens: Set<string> = new Set();
@@ -27,6 +27,8 @@ export class AuthService {
     private mailService: MailService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Cart)
+    private cartRepository: Repository<Cart>,
   ) {}
 
   async handleGoogleLogin(googleUser: {
@@ -94,8 +96,37 @@ export class AuthService {
       throw new UnauthorizedException('بيانات الدخول غير صحيحة');
     }
 
-    return this.generateTokenResponse(user);
+    const latestUnpaidCart = await this.cartRepository.findOne({
+      where: { 
+        user: { id: user.id },
+        status: 'unpaid'
+      },
+      relations: ['items', 'items.book'],
+      order: { created_at: 'DESC' }
+    });
+
+     const tokenResponse = await this.generateTokenResponse(user);
+      const cartResponse = latestUnpaidCart ? {
+      id: latestUnpaidCart.id,
+      status: latestUnpaidCart.status,
+      created_at: latestUnpaidCart.created_at,
+      items: latestUnpaidCart.items?.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        book: item.book ? {
+          id: item.book.id,
+          title: item.book.title,
+          price: item.book.price
+        } : null
+      })) || []
+    } : null;
+
+    return {
+      ...tokenResponse,
+      cart: cartResponse
+    };
   }
+  
 
  
  
