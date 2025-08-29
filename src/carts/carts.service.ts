@@ -64,6 +64,7 @@ export class CartsService {
         quantity: true,
         book: {
           id: true,
+          img:true,
           title: true, 
           price: true
         }
