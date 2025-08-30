@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Req, UseGuards, Get, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Get, UnauthorizedException, HttpException, HttpStatus, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Request } from 'express';
+import { response } from 'express';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { TokenResponseDto } from './dto/token-response.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -85,19 +86,27 @@ async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePassw
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
 
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: Request) {
-    const googleUser = req.user as {
-      email: string;
-      firstName: string;
-      lastName: string;
-      picture?: string;
-      accessToken: string;
-    };
-    
-    return this.authService.handleGoogleLogin(googleUser);
-  }
+@Get('google/callback')
+@UseGuards(AuthGuard('google'))
+async googleAuthRedirect(@Req() req: Request, @Res() res: any) {
+  const googleUser = req.user as any;
+  const result = await this.authService.handleGoogleLogin(googleUser);
+  
+  res.cookie('token', result.access_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 3600000
+  });
+  
+  res.send(`
+    <html>
+      <script>
+        window.location.href = 'http://localhost:3000/en/';
+      </script>
+    </html>
+  `);
+}
   
 
 
